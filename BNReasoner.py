@@ -60,12 +60,19 @@ class BNReasoner:
     def MEP(self):
         pass
 
-    # Mainly for trying things
-    def main():
-        pass
+# Mainly for trying things
+def main():
+    #net_path = "testing/dog_problem.BIFXML"
+    net_path = "testing/dog_problem.BIFXML"
+
+    reasoner = BNReasoner(net=net_path)
+
+    print(reasoner.bn.parents('dog-out'))
+    print(reasoner.bn.descendants('dog-out'))
+    print(reasoner.bn.non_descendants('dog-out'))
+
+    reasoner.bn.draw_structure()
 
 if __name__ == "__main__":
-    net_path = "testing/dog_problem.BIFXML"
-    reasoner = BNReasoner(net=net_path)
-    reasoner.bn.draw_structure()
+    main()
 

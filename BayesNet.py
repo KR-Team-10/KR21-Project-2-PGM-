@@ -84,6 +84,51 @@ class BayesNet:
         :return: List of children
         """
         return [c for c in self.structure.successors(variable)]
+    
+    # TODO No idea what I was trying to do here but it ain't it chief.
+    def pr(self, variables: Dict[str, bool]) -> float:
+        """
+        Returns the prior of the variable assignment.
+        :param variables: Variable assignment to check.
+        :return: The prior as a floating point number.
+        """
+        pr = 0
+        cpts = [self.get_cpt(v) for v in variables]
+        for cpt in cpts:
+            for row in cpt.iterrows():
+                if all([v in row[1] and row[1][v] == variables[v] for v in variables]):
+                    pr += row[1]['p']
+        return pr
+    
+    # TODO Please double check me... @Martin
+    def parents(self, variable: str) -> List[str]:
+        """
+        Returns the parents of a variable.
+        :param variable: The variable.
+        :return: A list of parents.
+        """
+        return [a for a, b in self.structure.edges if b == variable]
+    
+    # TODO Please double check me... @Martin
+    def descendants(self, variable: str) -> List[str]:
+        """
+        Returns the descendants of a variable.
+        :param variable: The variable.
+        :return: A list of descendants.
+        """
+        descendants = [b for a, b in self.structure.edges if a == variable]
+        for child in descendants:
+            [descendants.append(d) for d in self.descendants(child) if d not in descendants]
+        return descendants
+
+    # TODO Please double check me... @Martin
+    def non_descendants(self, variable: str) -> List[str]:
+        """
+        Returns the non-descendants of a variable.
+        :param variable: The variable.
+        :return: A list of non-descendants.
+        """
+        return [v for v in self.get_all_variables() if v not in self.descendants(variable) and v not in self.parents(variable) and v != variable]
 
     def get_cpt(self, variable: str) -> pd.DataFrame:
         """
