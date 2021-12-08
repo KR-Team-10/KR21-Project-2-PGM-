@@ -15,4 +15,38 @@ class BNReasoner:
         else:
             self.bn = net
 
-    # TODO: This is where your methods should go
+    # TODO: Remove TODO's as we go
+    # Hit it, hit it, get it, get it
+
+    # TODO Given three sets of variables X, Y , and Z, determine whether X
+    # is independent of Y given Z. (5pts)
+    def d_separation(self):
+        pass
+
+    # TODO Given a set of variables X in the Bayesian network,
+    # compute a good ordering for elimination of X based on the min-degree
+    # heuristics (2pts) and the min-fill heuristics (2pts).
+    # (Hint: you get the interaction graph ”for free” from the BayesNet class)
+    def ordering(self):
+        pass
+
+    # TODO Given a set of query variables Q and evidence E, node- and
+    # edge-prune the Bayesian network s.t. queries of the form P(Q|E)
+    # can still be correctly calculated (5pts).
+    def network_pruning(self):
+        pass
+
+    # TODO Given query variables Q and a possibly empty evidence E, compute
+    # the marginal distribution P(Q|E) (12pts). (Note that Q is a subset of
+    # the variables in the Bayesian network X with Q⊂X but can also be Q=X.)
+    def marginal_distributions(self):
+        pass
+
+    # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
+    # evidence E, compute the most likely instantiations of Q (12pts).
+    def MAP(self):
+        pass
+
+    # TODO liberate the settlements
+    def MEP(self):
+        pass
