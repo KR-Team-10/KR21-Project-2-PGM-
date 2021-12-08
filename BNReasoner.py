@@ -20,7 +20,7 @@ class BNReasoner:
 
     # TODO Given three sets of variables X, Y , and Z, determine whether X
     # is independent of Y given Z. (5pts)
-    def d_separation(self):
+    def d_separation(self, X, Z, Y):
         pass
 
     # TODO Given a set of variables X in the Bayesian network,
@@ -34,6 +34,15 @@ class BNReasoner:
     # edge-prune the Bayesian network s.t. queries of the form P(Q|E)
     # can still be correctly calculated (5pts).
     def network_pruning(self):
+        self.node_prune()
+        self.edge_prune()
+
+    # TODO Node pruning
+    def node_prune(self):
+        pass
+    
+    # Edge pruning
+    def edge_prune(self):
         pass
 
     # TODO Given query variables Q and a possibly empty evidence E, compute
@@ -50,3 +59,13 @@ class BNReasoner:
     # TODO liberate the settlements
     def MEP(self):
         pass
+
+    # Mainly for trying things
+    def main():
+        pass
+
+if __name__ == "__main__":
+    net_path = "testing/dog_problem.BIFXML"
+    reasoner = BNReasoner(net=net_path)
+    reasoner.bn.draw_structure()
+
