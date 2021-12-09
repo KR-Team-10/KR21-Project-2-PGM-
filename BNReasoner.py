@@ -5,7 +5,8 @@ from BayesNet import BayesNet
 class BNReasoner:
     def __init__(self, net: Union[str, BayesNet]):
         """
-        :param net: either file path of the bayesian network in BIFXML format or BayesNet object
+        :param net: either file path of the bayesian network in BIFXML format
+        or BayesNet object
         """
         if type(net) == str:
             # constructs a BN object
@@ -40,7 +41,7 @@ class BNReasoner:
     # TODO Node pruning
     def node_prune(self):
         pass
-    
+
     # Edge pruning
     def edge_prune(self):
         pass
@@ -60,9 +61,10 @@ class BNReasoner:
     def MEP(self):
         pass
 
+
 # Mainly for trying things
 def main():
-    #net_path = "testing/dog_problem.BIFXML"
+    # net_path = "testing/dog_problem.BIFXML"
     net_path = "testing/dog_problem.BIFXML"
 
     reasoner = BNReasoner(net=net_path)
@@ -73,6 +75,6 @@ def main():
 
     reasoner.bn.draw_structure()
 
+
 if __name__ == "__main__":
     main()
-

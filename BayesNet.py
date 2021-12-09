@@ -18,7 +18,7 @@ class BayesNet:
     def create_bn(self, variables: List[str], edges: List[Tuple[str, str]], cpts: Dict[str, pd.DataFrame]) -> None:
         """
         Creates the BN according to the python objects passed in.
-        
+
         :param variables: List of names of the variables.
         :param edges: List of the directed edges.
         :param cpts: Dictionary of conditional probability tables.
@@ -66,10 +66,10 @@ class BayesNet:
             columns.append(key)
             columns.append('p')
             cpts[key] = pd.DataFrame(cpt, columns=columns)
-        
+
         # load vars
         variables = bif_reader.get_variables()
-        
+
         # load edges
         edges = bif_reader.get_edges()
 
@@ -84,7 +84,7 @@ class BayesNet:
         :return: List of children
         """
         return [c for c in self.structure.successors(variable)]
-    
+
     # TODO No idea what I was trying to do here but it ain't it chief.
     def pr(self, variables: Dict[str, bool]) -> float:
         """
@@ -99,7 +99,7 @@ class BayesNet:
                 if all([v in row[1] and row[1][v] == variables[v] for v in variables]):
                     pr += row[1]['p']
         return pr
-    
+
     # TODO Please double check me... @Martin
     def parents(self, variable: str) -> List[str]:
         """
@@ -108,7 +108,7 @@ class BayesNet:
         :return: A list of parents.
         """
         return [a for a, b in self.structure.edges if b == variable]
-    
+
     # TODO Please double check me... @Martin
     def descendants(self, variable: str) -> List[str]:
         """
@@ -171,8 +171,8 @@ class BayesNet:
         # connect all variables with an edge which are mentioned in a CPT together
         for var in self.get_all_variables():
             involved_vars = list(self.get_cpt(var).columns)[:-1]
-            for i in range(len(involved_vars)-1):
-                for j in range(i+1, len(involved_vars)):
+            for i in range(len(involved_vars) - 1):
+                for j in range(i + 1, len(involved_vars)):
                     if not int_graph.has_edge(involved_vars[i], involved_vars[j]):
                         int_graph.add_edge(involved_vars[i], involved_vars[j])
         return int_graph
