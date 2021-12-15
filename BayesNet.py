@@ -9,13 +9,17 @@ from copy import deepcopy
 
 
 class BayesNet:
-
     def __init__(self) -> None:
         # initialize graph structure
         self.structure = nx.DiGraph()
 
     # LOADING FUNCTIONS ------------------------------------------------------------------------------------------------
-    def create_bn(self, variables: List[str], edges: List[Tuple[str, str]], cpts: Dict[str, pd.DataFrame]) -> None:
+    def create_bn(
+        self,
+        variables: List[str],
+        edges: List[Tuple[str, str]],
+        cpts: Dict[str, pd.DataFrame],
+    ) -> None:
         """
         Creates the BN according to the python objects passed in.
 
@@ -31,7 +35,7 @@ class BayesNet:
 
         # check for cycles
         if not nx.is_directed_acyclic_graph(self.structure):
-            raise Exception('The provided graph is not acyclic.')
+            raise Exception("The provided graph is not acyclic.")
 
     def load_from_bifxml(self, file_path: str) -> None:
         """
@@ -64,7 +68,7 @@ class BayesNet:
             columns = bif_reader.get_parents()[key]
             columns.reverse()
             columns.append(key)
-            columns.append('p')
+            columns.append("p")
             cpts[key] = pd.DataFrame(cpt, columns=columns)
 
         # load vars
@@ -97,10 +101,10 @@ class BayesNet:
         for cpt in cpts:
             for row in cpt.iterrows():
                 if all([v in row[1] and row[1][v] == variables[v] for v in variables]):
-                    pr += row[1]['p']
+                    pr += row[1]["p"]
         return pr
 
-    # TODO Please double check me... @Martin
+    # TODO Please double check me...
     def parents(self, variable: str) -> List[str]:
         """
         Returns the parents of a variable.
@@ -109,7 +113,7 @@ class BayesNet:
         """
         return [a for a, b in self.structure.edges if b == variable]
 
-    # TODO Please double check me... @Martin
+    # TODO Please double check me...
     def descendants(self, variable: str) -> List[str]:
         """
         Returns the descendants of a variable.
@@ -118,17 +122,27 @@ class BayesNet:
         """
         descendants = [b for a, b in self.structure.edges if a == variable]
         for child in descendants:
-            [descendants.append(d) for d in self.descendants(child) if d not in descendants]
+            [
+                descendants.append(d)
+                for d in self.descendants(child)
+                if d not in descendants
+            ]
         return descendants
 
-    # TODO Please double check me... @Martin
+    # TODO Please double check me...
     def non_descendants(self, variable: str) -> List[str]:
         """
         Returns the non-descendants of a variable.
         :param variable: The variable.
         :return: A list of non-descendants.
         """
-        return [v for v in self.get_all_variables() if v not in self.descendants(variable) and v not in self.parents(variable) and v != variable]
+        return [
+            v
+            for v in self.get_all_variables()
+            if v not in self.descendants(variable)
+            and v not in self.parents(variable)
+            and v != variable
+        ]
 
     def get_cpt(self, variable: str) -> pd.DataFrame:
         """
@@ -137,9 +151,9 @@ class BayesNet:
         :return: Conditional probability table of 'variable' as a pandas DataFrame.
         """
         try:
-            return self.structure.nodes[variable]['cpt']
+            return self.structure.nodes[variable]["cpt"]
         except KeyError:
-            raise Exception('Variable not in the BN')
+            raise Exception("Variable not in the BN")
 
     def get_all_variables(self) -> List[str]:
         """
@@ -178,7 +192,9 @@ class BayesNet:
         return int_graph
 
     @staticmethod
-    def get_compatible_instantiations_table(instantiation: pd.Series, cpt: pd.DataFrame):
+    def get_compatible_instantiations_table(
+        instantiation: pd.Series, cpt: pd.DataFrame
+    ):
         """
         Get all the entries of a CPT which are compatible with the instantiation.
 
@@ -187,7 +203,9 @@ class BayesNet:
         :return: table with compatible instantiations and their probability value
         """
         var_names = instantiation.index.values
-        var_names = [v for v in var_names if v in cpt.columns]  # get rid of excess variables names
+        var_names = [
+            v for v in var_names if v in cpt.columns
+        ]  # get rid of excess variables names
         compat_indices = cpt[var_names] == instantiation[var_names].values
         compat_indices = [all(x[1]) for x in compat_indices.iterrows()]
         compat_instances = cpt.loc[compat_indices]
@@ -212,12 +230,14 @@ class BayesNet:
         :return: cpt with their original probability value and zero probability for incompatible instantiations
         """
         var_names = instantiation.index.values
-        var_names = [v for v in var_names if v in cpt.columns]  # get rid of excess variables names
+        var_names = [
+            v for v in var_names if v in cpt.columns
+        ]  # get rid of excess variables names
         if len(var_names) > 0:  # only reduce the factor if the evidence appears in it
             new_cpt = deepcopy(cpt)
             incompat_indices = cpt[var_names] != instantiation[var_names].values
             incompat_indices = [any(x[1]) for x in incompat_indices.iterrows()]
-            new_cpt.loc[incompat_indices, 'p'] = 0.0
+            new_cpt.loc[incompat_indices, "p"] = 0.0
             return new_cpt
         else:
             return cpt
@@ -238,7 +258,7 @@ class BayesNet:
         :param cpt: conditional probability table of the variable.
         """
         if variable in self.structure.nodes:
-            raise Exception('Variable already exists.')
+            raise Exception("Variable already exists.")
         else:
             self.structure.add_node(variable, cpt=cpt)
 
@@ -249,14 +269,14 @@ class BayesNet:
         :raises Exception: If added edge introduces a cycle in the structure.
         """
         if edge in self.structure.edges:
-            raise Exception('Edge already exists.')
+            raise Exception("Edge already exists.")
         else:
             self.structure.add_edge(edge[0], edge[1])
 
         # check for cycles
         if not nx.is_directed_acyclic_graph(self.structure):
             self.structure.remove_edge(edge[0], edge[1])
-            raise ValueError('Edge would make graph cyclic.')
+            raise ValueError("Edge would make graph cyclic.")
 
     def del_var(self, variable: str) -> None:
         """

@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 from BayesNet import BayesNet
 
 
@@ -34,17 +34,39 @@ class BNReasoner:
     # TODO Given a set of query variables Q and evidence E, node- and
     # edge-prune the Bayesian network s.t. queries of the form P(Q|E)
     # can still be correctly calculated (5pts).
-    def network_pruning(self):
-        self.node_prune()
-        self.edge_prune()
+    # TODO We need to check my implementation because in the slides its XYZ insted of queries and evidence
+    def network_pruning(self, X: List[str], Y: List[str], Z: List[str]):
+        """
+        Prunes the edges and nodes of the structure.
+        Deletes every leaf node W ∉ X∪Y∪Z.
+        Deletes all edges outgoing from nodes in Z.
+        :param X: A list of variable names.
+        :param Y: A list of variable names.
+        :param Z: A list of variable names. X and Y are d-separated with respect to Z.
+        """
+        self.__node_prune(X, Y, Z)
+        self.__edge_prune(X, Y, Z)
 
-    # TODO Node pruning
-    def node_prune(self):
-        pass
+    # TODO Please check my work
+    # Deletes every leaf node W ∉ X∪Y∪Z
+    def __node_prune(self, X: List[str], Y: List[str], Z: List[str]):
+        prune = []
+        for W in self.bn.get_all_variables():
+            if self.bn.descendants(W) == []:  # If W is a leaf node
+                if W not in (X + Y + Z):  # If W ∉ X∪Y∪Z
+                    prune.append(W)
+        for p in prune:
+            self.bn.del_var(p)
 
-    # Edge pruning
-    def edge_prune(self):
-        pass
+    # TODO please check my work
+    # Deletes all edges outgoing from nodes in Z
+    def __edge_prune(self, X: List[str], Y: List[str], Z: List[str]):
+        prune = []
+        for edge in self.bn.structure.edges:
+            if edge[0] in Z:
+                prune.append(edge)
+        for p in prune:
+            self.bn.del_edge(p)
 
     # TODO Given query variables Q and a possibly empty evidence E, compute
     # the marginal distribution P(Q|E) (12pts). (Note that Q is a subset of
@@ -69,11 +91,15 @@ def main():
 
     reasoner = BNReasoner(net=net_path)
 
-    print(reasoner.bn.parents('dog-out'))
-    print(reasoner.bn.descendants('dog-out'))
-    print(reasoner.bn.non_descendants('dog-out'))
-
     reasoner.bn.draw_structure()
+    reasoner.network_pruning(1, 1, ["dog-out"])
+    reasoner.bn.draw_structure()
+
+    # print(reasoner.bn.parents("dog-out"))
+    # print(reasoner.bn.descendants("dog-out"))
+    # print(reasoner.bn.non_descendants("dog-out"))
+
+    # reasoner.bn.draw_structure()
 
 
 if __name__ == "__main__":
