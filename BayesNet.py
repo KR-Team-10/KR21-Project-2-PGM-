@@ -104,46 +104,6 @@ class BayesNet:
                     pr += row[1]["p"]
         return pr
 
-    # TODO Please double check me...
-    def parents(self, variable: str) -> List[str]:
-        """
-        Returns the parents of a variable.
-        :param variable: The variable.
-        :return: A list of parents.
-        """
-        return [a for a, b in self.structure.edges if b == variable]
-
-    # TODO Please double check me...
-    def descendants(self, variable: str) -> List[str]:
-        """
-        Returns the descendants of a variable.
-        :param variable: The variable.
-        :return: A list of descendants.
-        """
-        descendants = [b for a, b in self.structure.edges if a == variable]
-        for child in descendants:
-            [
-                descendants.append(d)
-                for d in self.descendants(child)
-                if d not in descendants
-            ]
-        return descendants
-
-    # TODO Please double check me...
-    def non_descendants(self, variable: str) -> List[str]:
-        """
-        Returns the non-descendants of a variable.
-        :param variable: The variable.
-        :return: A list of non-descendants.
-        """
-        return [
-            v
-            for v in self.get_all_variables()
-            if v not in self.descendants(variable)
-            and v not in self.parents(variable)
-            and v != variable
-        ]
-
     def get_cpt(self, variable: str) -> pd.DataFrame:
         """
         Returns the conditional probability table of a variable in the BN.
@@ -291,3 +251,44 @@ class BayesNet:
         :param edge: Edge to be deleted (e.g. ('A', 'B')).
         """
         self.structure.remove_edge(edge[0], edge[1])
+
+    # We added these ---------------------------------------------------------------------------------------------------------------
+    # TODO Please double check me...
+    def parents(self, variable: str) -> List[str]:
+        """
+        Returns the parents of a variable.
+        :param variable: The variable.
+        :return: A list of parents.
+        """
+        return [a for a, b in self.structure.edges if b == variable]
+
+    # TODO Please double check me...
+    def descendants(self, variable: str) -> List[str]:
+        """
+        Returns the descendants of a variable.
+        :param variable: The variable.
+        :return: A list of descendants.
+        """
+        descendants = [b for a, b in self.structure.edges if a == variable]
+        for child in descendants:
+            [
+                descendants.append(d)
+                for d in self.descendants(child)
+                if d not in descendants
+            ]
+        return descendants
+
+    # TODO Please double check me...
+    def non_descendants(self, variable: str) -> List[str]:
+        """
+        Returns the non-descendants of a variable.
+        :param variable: The variable.
+        :return: A list of non-descendants.
+        """
+        return [
+            v
+            for v in self.get_all_variables()
+            if v not in self.descendants(variable)
+            and v not in self.parents(variable)
+            and v != variable
+        ]
