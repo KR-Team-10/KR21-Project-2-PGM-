@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Tuple, Dict
 from BayesNet import BayesNet
 
 
@@ -35,44 +35,51 @@ class BNReasoner:
     # edge-prune the Bayesian network s.t. queries of the form P(Q|E)
     # can still be correctly calculated (5pts).
     # TODO We need to check my implementation because in the slides its XYZ insted of queries and evidence
-    def network_pruning(self, X: List[str], Y: List[str], Z: List[str]):
+    def network_pruning(self, Q: List[str], E: Dict[str, bool]):
         """
         Prunes the edges and nodes of the structure.
-        Deletes every leaf node W ∉ X∪Y∪Z.
-        Deletes all edges outgoing from nodes in Z.
-        :param X: A list of variable names.
-        :param Y: A list of variable names.
-        :param Z: A list of variable names. X and Y are d-separated with respect to Z.
+        Deletes every leaf node W ∉ Q∪E.
+        Deletes all edges outgoing from nodes in E.
+        :param Q: A list of variable names.
+        :param E: A dictionary mapping variable names to their indicated truth assignments.
         """
-        self.__node_prune(X, Y, Z)
-        self.__edge_prune(X, Y, Z)
+        self.__node_prune(Q, E)
+        if E:
+            self.__edge_prune(E)
 
     # TODO Please check my work
-    # Deletes every leaf node W ∉ X∪Y∪Z
-    def __node_prune(self, X: List[str], Y: List[str], Z: List[str]):
+    # Deletes every leaf node W ∉ Q∪E
+    def __node_prune(self, Q: List[str], E: Dict[str, bool]):
         prune = []
         for W in self.bn.get_all_variables():
             if self.bn.descendants(W) == []:  # If W is a leaf node
-                if W not in (X + Y + Z):  # If W ∉ X∪Y∪Z
+                if W not in (Q + list(E)):  # If W ∉ Q∪E
                     prune.append(W)
-        for p in prune:
-            self.bn.del_var(p)
+        [self.bn.del_var(p) for p in prune]
 
-    # TODO please check my work
-    # Deletes all edges outgoing from nodes in Z
-    def __edge_prune(self, X: List[str], Y: List[str], Z: List[str]):
+    # Deletes all edges U from nodes in E
+    def __edge_prune(self, E: Dict[str, bool]):
         prune = []
         for edge in self.bn.structure.edges:
-            if edge[0] in Z:
+            if edge[0] in list(E):
                 prune.append(edge)
-        for p in prune:
-            self.bn.del_edge(p)
+        [self.__del_edge_and_replace_cpt(p) for p in prune]
+
+    def __del_edge_and_replace_cpt(self, edge: Tuple[str, str]):
+        self.bn.del_edge(edge)
+        # We neeed to implement CPT replacement for pruned edges
+        self.__replace_cpt(edge)
+        pass
+
+    # TODO Look at slide 9 of PGM-4
+    def __replace_cpt(sself, edge: Tuple[str, str]):
+        pass
 
     # TODO Given query variables Q and a possibly empty evidence E, compute
     # the marginal distribution P(Q|E) (12pts). (Note that Q is a subset of
     # the variables in the Bayesian network X with Q⊂X but can also be Q=X.)
-    def marginal_distributions(self):
-        pass
+    # def marginal_distribution(self, Q: list[str], E: Dict[str, bool]):
+    #     pass
 
     # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
     # evidence E, compute the most likely instantiations of Q (12pts).
@@ -87,19 +94,26 @@ class BNReasoner:
 # Mainly for trying things
 def main():
     # net_path = "testing/dog_problem.BIFXML"
-    net_path = "testing/dog_problem.BIFXML"
 
-    reasoner = BNReasoner(net=net_path)
-
-    reasoner.bn.draw_structure()
-    reasoner.network_pruning(1, 1, ["dog-out"])
-    reasoner.bn.draw_structure()
-
-    # print(reasoner.bn.parents("dog-out"))
-    # print(reasoner.bn.descendants("dog-out"))
-    # print(reasoner.bn.non_descendants("dog-out"))
+    # reasoner = BNReasoner(net=net_path)
 
     # reasoner.bn.draw_structure()
+
+    variables = list("ABCDEFG")
+    edges = [
+        ("A", "B"),
+        ("A", "C"),
+        ("C", "D"),
+        ("D", "E"),
+        ("D", "F"),
+        ("F", "G"),
+        ("A", "G"),
+        ("B", "E"),
+        ("D", "G"),
+    ]
+    bn = BayesNet()
+    bn.create_bn(variables, edges, [None for x in variables])
+    bn.draw_structure()
 
 
 if __name__ == "__main__":
