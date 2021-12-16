@@ -112,7 +112,7 @@ def main():
         ("D", "G"),
     ]
     bn = BayesNet()
-    bn.create_bn(variables, edges, [None for x in variables])
+    bn.create_bn(variables, edges, {x: None for x in variables})
     bn.draw_structure()
 
 
