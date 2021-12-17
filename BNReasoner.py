@@ -43,9 +43,8 @@ class BNReasoner:
         :param Q: A list of variable names.
         :param E: A dictionary mapping variable names to their indicated truth assignments.
         """
-        # self.__node_prune(Q, E)
-        if E:
-            self.__edge_prune(E)
+        self.__node_prune(Q, E)
+        self.__edge_prune(E)
 
     # TODO Please check my work
     # Deletes every leaf node W ∉ Q∪E
@@ -64,17 +63,22 @@ class BNReasoner:
             if edge[0] in list(E):
                 prune.append(edge)
         for p in prune:
-            self.__del_edge_and_replace_cpt(edge=p, truth=E[p[0]])
+            self.__del_edge_and_replace_cpt(edge=p, evidence=(p[0], E[p[0]]))
 
-    def __del_edge_and_replace_cpt(self, edge: Tuple[str, str], truth: bool):
+    def __del_edge_and_replace_cpt(self, edge: Tuple[str, str], evidence: Tuple[str, bool]):
         self.bn.del_edge(edge)
         # We neeed to implement CPT replacement for pruned edges
-        self.__replace_cpt(edge[1], truth)
+        self.__replace_cpt(cpt_variable=edge[1], evidence=evidence)
 
     # TODO Look at slide 9 of PGM-4
-    def __replace_cpt(self, edge: Tuple[str, str], truth: bool):
-        old_cpt = self.bn.get_cpt(edge)
-        print(old_cpt)
+    def __replace_cpt(self, cpt_variable: str, evidence: Tuple[str, bool]):
+        evidence_var, truth = evidence
+
+        old_cpt = self.bn.get_cpt(cpt_variable)
+        new_cpt = old_cpt[old_cpt[evidence_var] == truth].drop([evidence_var], axis=1, inplace=False)
+        self.bn.update_cpt(variable=cpt_variable, cpt=new_cpt)
+
+
 
     # TODO Given query variables Q and a possibly empty evidence E, compute
     # the marginal distribution P(Q|E) (12pts). (Note that Q is a subset of
