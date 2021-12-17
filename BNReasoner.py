@@ -1,7 +1,7 @@
 from typing import Union, List, Tuple, Dict
 from BayesNet import BayesNet
 from itertools import combinations
-import copy
+from copy import deepcopy
 
 
 class BNReasoner:
@@ -17,14 +17,22 @@ class BNReasoner:
             self.bn.load_from_bifxml(net)
         else:
             self.bn = net
+        self.dsep_bn = deepcopy(self.bn)
 
     # TODO: Remove TODO's as we go
     # Hit it, hit it, get it, get it
 
     # TODO Given three sets of variables X, Y , and Z, determine whether X
     # is independent of Y given Z. (5pts)
-    def d_separation(self, X, Z, Y):
-        pass
+    def d_separation(self, X: List[str], Z: List[str], Y: List[str]) -> bool:
+        nodes_pruned, edges_pruned = True, True
+        while nodes_pruned or edges_pruned:
+            if nodes_pruned:
+                nodes_pruned = self.__dseparation_node_prune(X, Y, Z)
+            if edges_pruned:
+                edges_pruned = self.__dseparation_edge_prune(X, Y, Z)
+        self.dsep_bn.draw_structure()
+        return self.dsep_bn.disconnected(X, Y)
 
     # TODO We need to check my implementation because in the slides its XYZ insted of queries and evidence
     def network_pruning(self, X: List[str], Y: List[str], Z: List[str]):
@@ -40,23 +48,29 @@ class BNReasoner:
         self.__dseparation_edge_prune(X, Y, Z)
 
     # Deletes every leaf node W ∉ X∪Y∪Z
-    def __dseparation_node_prune(self, X: List[str], Y: List[str], Z: List[str]):
+    def __dseparation_node_prune(
+        self, X: List[str], Y: List[str], Z: List[str]
+    ) -> bool:
         prune = []
-        for W in self.bn.get_all_variables():
-            if self.bn.descendants(W) == []:  # If W is a leaf node
+        for W in self.dsep_bn.get_all_variables():
+            if self.dsep_bn.descendants(W) == []:  # If W is a leaf node
                 if W not in (X + Y + Z):  # If W ∉ X∪Y∪Z
                     prune.append(W)
         for p in prune:
-            self.bn.del_var(p)
+            self.dsep_bn.del_var(p)
+        return prune == []
 
     # Deletes all edges outgoing from nodes in Z
-    def __dseparation_edge_prune(self, X: List[str], Y: List[str], Z: List[str]):
+    def __dseparation_edge_prune(
+        self, X: List[str], Y: List[str], Z: List[str]
+    ) -> bool:
         prune = []
-        for edge in self.bn.structure.edges:
+        for edge in self.dsep_bn.structure.edges:
             if edge[0] in Z:
                 prune.append(edge)
         for p in prune:
-            self.bn.del_edge(p)    
+            self.dsep_bn.del_edge(p)
+        return prune == []
 
     # TODO Given a set of variables X in the Bayesian network,
     # compute a good ordering for elimination of X based on the min-degree
@@ -245,19 +259,22 @@ def main():
     # reasoner.network_pruning(Q=[], E={"A": True, "C": False})
     # reasoner.bn.draw_structure()
 
-    variables = list("ABCDE")
-    edges = [
-        ("A", "B"),
-        ("A", "C"),
-        ("B", "D"),
-        ("C", "D"),
-        ("C", "E"),
-    ]
-    bn = BayesNet()
-    bn.create_bn(variables, edges, {x: None for x in variables})
-    # bn.draw_structure()
+    # variables = list("ABCDE")
+    # edges = [
+    #     ("A", "B"),
+    #     ("A", "C"),
+    #     ("B", "D"),
+    #     ("C", "D"),
+    #     ("C", "E"),
+    # ]
+    # bn = BayesNet()
+    # bn.create_bn(variables, edges, {x: None for x in variables})
+    # reasoner = BNReasoner(bn)
 
-    main_martin()
+    net_path = "testing/d_separation_example.BIFXML"
+    reasoner = BNReasoner(net=net_path)
+
+    reasoner.d_separation(X=["A", "S"], Z=["P", "B"], Y=["X", "D"])
 
 
 def main_martin():
