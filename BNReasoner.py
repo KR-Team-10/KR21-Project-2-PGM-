@@ -44,7 +44,7 @@ class BNReasoner:
         :param Q: A list of variable names.
         :param E: A dictionary mapping variable names to their indicated truth assignments.
         """
-        self.__node_prune(Q, E)
+        # self.__node_prune(Q, E)
         if E:
             self.__edge_prune(E)
 
@@ -64,17 +64,18 @@ class BNReasoner:
         for edge in self.bn.structure.edges:
             if edge[0] in list(E):
                 prune.append(edge)
-        [self.__del_edge_and_replace_cpt(p) for p in prune]
+        for p in prune:
+            self.__del_edge_and_replace_cpt(edge=p, truth=E[p[0]])
 
-    def __del_edge_and_replace_cpt(self, edge: Tuple[str, str]):
+    def __del_edge_and_replace_cpt(self, edge: Tuple[str, str], truth: bool):
         self.bn.del_edge(edge)
         # We neeed to implement CPT replacement for pruned edges
-        self.__replace_cpt(edge)
-        pass
+        self.__replace_cpt(edge[1], truth)
 
     # TODO Look at slide 9 of PGM-4
-    def __replace_cpt(sself, edge: Tuple[str, str]):
-        pass
+    def __replace_cpt(self, edge: Tuple[str, str], truth: bool):
+        old_cpt = self.bn.get_cpt(edge)
+        print(old_cpt)
 
     # TODO Given query variables Q and a possibly empty evidence E, compute
     # the marginal distribution P(Q|E) (12pts). (Note that Q is a subset of
@@ -176,10 +177,20 @@ class BNReasoner:
     
 # Mainly for trying things
 def main():
-    # net_path = "testing/dog_problem.BIFXML"
 
-    # reasoner = BNReasoner(net=net_path)
-
+    # variables = list("ABCDEF")
+    # edges = [
+    #     ("A", "B"),
+    #     ("A", "C"),
+    #     ("B", "D"),
+    #     ("B", "E"),
+    #     ("C", "E"),
+    #     ("C", "F"),
+    # ]
+    # bn = BayesNet()
+    # bn.create_bn(variables, edges, {x: None for x in variables})
+    # reasoner = BNReasoner(bn)
+    # reasoner.network_pruning(Q=[], E={"A": True, "C": False})
     # reasoner.bn.draw_structure()
 
     variables = list("ABCDE")
@@ -198,12 +209,18 @@ def main():
 
 def main_martin():
     net_path = "testing/interaction_graph_example.BIFXML"
+    net_path = "testing/dog_problem.BIFXML"
+
+    reasoner = BNReasoner(net=net_path)
+    reasoner.network_pruning(Q=[], E={"family-out": True})
+
+    reasoner.bn.draw_structure()
 
     reasoner = BNReasoner(net=net_path)
     
     # reasoner.min_degree_order()
     # reasoner.min_fill_order()
 
-    
+
 if __name__ == "__main__":
     main()
