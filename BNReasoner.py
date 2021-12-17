@@ -62,8 +62,13 @@ class BNReasoner:
     # compute a good ordering for elimination of X based on the min-degree
     # heuristics (2pts) and the min-fill heuristics (2pts).
     # (Hint: you get the interaction graph ”for free” from the BayesNet class)
-    def ordering(self):
-        pass
+    def ordering(self, heuristic="degree"):
+        if heuristic.lower not in ["degree", "fill"]:
+            raise Exception
+
+        if heuristic == "degree":
+            return self.__min_degree_order()
+        return self.__min_fill_order()
 
     # TODO Given a set of query variables Q and evidence E, node- and
     # edge-prune the Bayesian network s.t. queries of the form P(Q|E)
@@ -132,7 +137,7 @@ class BNReasoner:
         pass
 
     # Get the MINIMAL DEGREE order of variable eliminiation
-    def min_degree_order(self):
+    def __min_degree_order(self):
         interaction = self.bn.get_interaction_graph()
         pi = []
         for i in range(0, len(interaction.nodes)):
@@ -178,7 +183,7 @@ class BNReasoner:
         return pi
 
     # Get the MINIMAL FILL order of variable eliminiation
-    def min_fill_order(self):
+    def __min_fill_order(self):
         interaction = self.bn.get_interaction_graph()
         pi = []
 
