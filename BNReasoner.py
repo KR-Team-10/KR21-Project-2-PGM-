@@ -26,6 +26,38 @@ class BNReasoner:
     def d_separation(self, X, Z, Y):
         pass
 
+    # TODO We need to check my implementation because in the slides its XYZ insted of queries and evidence
+    def network_pruning(self, X: List[str], Y: List[str], Z: List[str]):
+        """
+        Prunes the edges and nodes of the structure.
+        Deletes every leaf node W ∉ X∪Y∪Z.
+        Deletes all edges outgoing from nodes in Z.
+        :param X: A list of variable names.
+        :param Y: A list of variable names.
+        :param Z: A list of variable names. X and Y are d-separated with respect to Z.
+        """
+        self.__dseparation_node_prune(X, Y, Z)
+        self.__dseparation_edge_prune(X, Y, Z)
+
+    # Deletes every leaf node W ∉ X∪Y∪Z
+    def __dseparation_node_prune(self, X: List[str], Y: List[str], Z: List[str]):
+        prune = []
+        for W in self.bn.get_all_variables():
+            if self.bn.descendants(W) == []:  # If W is a leaf node
+                if W not in (X + Y + Z):  # If W ∉ X∪Y∪Z
+                    prune.append(W)
+        for p in prune:
+            self.bn.del_var(p)
+
+    # Deletes all edges outgoing from nodes in Z
+    def __dseparation_edge_prune(self, X: List[str], Y: List[str], Z: List[str]):
+        prune = []
+        for edge in self.bn.structure.edges:
+            if edge[0] in Z:
+                prune.append(edge)
+        for p in prune:
+            self.bn.del_edge(p)    
+
     # TODO Given a set of variables X in the Bayesian network,
     # compute a good ordering for elimination of X based on the min-degree
     # heuristics (2pts) and the min-fill heuristics (2pts).
