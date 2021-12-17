@@ -27,7 +27,6 @@ class BNReasoner:
     def d_separation(self, X: List[str], Z: List[str], Y: List[str]) -> bool:
         nodes_pruned, edges_pruned = True, True
         while nodes_pruned or edges_pruned:
-            print(nodes_pruned, edges_pruned)
             if nodes_pruned:
                 nodes_pruned = self.__dseparation_node_prune(X, Y, Z)
             if edges_pruned:
@@ -58,7 +57,6 @@ class BNReasoner:
                     prune.append(W)
         for p in prune:
             self.dsep_bn.del_var(p)
-        print(prune)
         return prune != []
 
     # Deletes all edges outgoing from nodes in Z
@@ -274,8 +272,10 @@ def main():
 
     net_path = "testing/d_separation_example.BIFXML"
     reasoner = BNReasoner(net=net_path)
-    reasoner.d_separation(X=["A", "S"], Z=["P", "B"], Y=["X", "D"])
-    reasoner.dsep_bn.draw_structure()
+    if reasoner.d_separation(X=["A", "S"], Z=["P", "B"], Y=["X", "D"]):
+        print("DSEP BIATCHHHH")
+    else:
+        print("No DSEP buckerrrrrrr")
 
 
 def main_martin():
