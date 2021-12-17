@@ -80,60 +80,60 @@
     <!-- PCTs -->
     <DEFINITION>
         <FOR>Sex</FOR>
-        <TABLE>0.49 0.51</TABLE>
+        <TABLE>0.51 0.49</TABLE>
     </DEFINITION>
     <DEFINITION>
         <FOR>Genetic</FOR>
-        <TABLE>0.26 0.74</TABLE>
+        <TABLE>0.74 0.26</TABLE>
     </DEFINITION>
     <DEFINITION>
         <FOR>ADHD</FOR>
-        <GIVEN>Genetic</GIVEN>
         <GIVEN>Sex</GIVEN>
-        <TABLE>0.4 0.6 0.7 0.3 0.01 0.99 0.15 0.85</TABLE>
+        <GIVEN>Genetic</GIVEN>
+        <TABLE>0.85 0.15 0.99 0.01 0.3 0.7 0.6 0.4</TABLE>
     </DEFINITION>
     <DEFINITION>
         <FOR>Autism</FOR>
         <GIVEN>Genetic</GIVEN>
-        <TABLE>0.95 0.05 0.01 0.99</TABLE> <!-- Order: Rain?, Sprinkler?, Wet Grass?-->
+        <TABLE>0.99 0.01 0.05 0.95</TABLE> <!-- Order: Rain?, Sprinkler?, Wet Grass?-->
     </DEFINITION>
     <DEFINITION>
         <FOR>Depression</FOR>
-        <GIVEN>Genetic</GIVEN>
-        <GIVEN>Sex</GIVEN>
         <GIVEN>ADHD</GIVEN>
-        <TABLE>0.7 0.3 0.65 0.35 0.75 0.25 0.6 0.4 0.55 0.45 0.05 0.95 0.45 0.55 0.03 0.97</TABLE>
+        <GIVEN>Sex</GIVEN>
+        <GIVEN>Genetic</GIVEN>
+        <TABLE>0.97 0.03 0.55 0.45 0.95 0.05 0.45 0.55 0.4 0.6 0.25 0.75 0.35 0.65 0.3 0.7</TABLE>
     </DEFINITION>
     <DEFINITION>
         <FOR>Anxiety</FOR>
-        <GIVEN>Genetic</GIVEN>
-        <GIVEN>Depression</GIVEN>
         <GIVEN>ADHD</GIVEN>
-        <TABLE>0.99 0.01 0.95 0.05 0.8 0.2 0.6 0.4 0.9 0.1 0.7 0.3 0.75 0.25 0.35 0.65</TABLE>
-    <DEFINITION>
+        <GIVEN>Depression</GIVEN>
+        <GIVEN>Genetic</GIVEN>
+        <TABLE>0.65 0.35 0.25 0.75 0.3 0.7 0.1 0.9 0.4 0.6 0.2 0.8 0.05 0.95 0.01 0.99</TABLE>
+    </DEFINITION>
     <DEFINITION>
         <FOR>OCD</FOR>
-        <GIVEN>Autism</GIVEN>
         <GIVEN>ADHD</GIVEN>
-        <TABLE>1 0 0.93 0.07 0.88 0.12 0.34 0.66</TABLE>
+        <GIVEN>Autism</GIVEN>
+        <TABLE>0.66 0.34 0.12 0.88 0.07 0.93 0 1</TABLE>
     </DEFINITION>
     <DEFINITION>
         <FOR>ED</FOR>
-        <GIVEN>Depression</GIVEN>
         <GIVEN>Anxiety</GIVEN>
-        <TABLE>0.71 0.29 0.63 0.37 0.6 0.4 0.34 0.66</TABLE>
+        <GIVEN>Depression</GIVEN>
+        <TABLE>0.66 0.34 0.4 0.6 0.37 0.63 0.29 0.71</TABLE>
     </DEFINITION>
     <DEFINITION>
         <FOR>Insomnia</FOR>
-        <GIVEN>Depression</GIVEN>
         <GIVEN>Anxiety</GIVEN>
-        <TABLE>0.99 0.01 0.78 0.22 0.85 0.15 0.23 0.77</TABLE>
+        <GIVEN>Depression</GIVEN>
+        <TABLE>0.77 0.23 0.15 0.85 0.22 0.78 0.01 0.99</TABLE>
     </DEFINITION>
     <DEFINITION>
         <FOR>SA</FOR>
+        <GIVEN>Insomnia</GIVEN>
         <GIVEN>Depression</GIVEN>
-        <GIVEN>Anxiety</GIVEN>
-        <TABLE>0.77 0.23 0.72 0.28 0.69 0.31 0.33 0.67</TABLE>
+        <TABLE>0.67 0.33 0.31 0.69 0.28 0.72 0.23 0.77</TABLE>
     </DEFINITION>
 </NETWORK>
 </BIF>
