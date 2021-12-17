@@ -27,11 +27,11 @@ class BNReasoner:
     def d_separation(self, X: List[str], Z: List[str], Y: List[str]) -> bool:
         nodes_pruned, edges_pruned = True, True
         while nodes_pruned or edges_pruned:
+            print(nodes_pruned, edges_pruned)
             if nodes_pruned:
                 nodes_pruned = self.__dseparation_node_prune(X, Y, Z)
             if edges_pruned:
                 edges_pruned = self.__dseparation_edge_prune(X, Y, Z)
-        self.dsep_bn.draw_structure()
         return self.dsep_bn.disconnected(X, Y)
 
     # TODO We need to check my implementation because in the slides its XYZ insted of queries and evidence
@@ -58,7 +58,8 @@ class BNReasoner:
                     prune.append(W)
         for p in prune:
             self.dsep_bn.del_var(p)
-        return prune == []
+        print(prune)
+        return prune != []
 
     # Deletes all edges outgoing from nodes in Z
     def __dseparation_edge_prune(
@@ -70,7 +71,7 @@ class BNReasoner:
                 prune.append(edge)
         for p in prune:
             self.dsep_bn.del_edge(p)
-        return prune == []
+        return prune != []
 
     # TODO Given a set of variables X in the Bayesian network,
     # compute a good ordering for elimination of X based on the min-degree
@@ -273,8 +274,8 @@ def main():
 
     net_path = "testing/d_separation_example.BIFXML"
     reasoner = BNReasoner(net=net_path)
-
     reasoner.d_separation(X=["A", "S"], Z=["P", "B"], Y=["X", "D"])
+    reasoner.dsep_bn.draw_structure()
 
 
 def main_martin():
