@@ -3,6 +3,7 @@ from BayesNet import BayesNet
 from itertools import combinations
 import copy
 
+
 class BNReasoner:
     def __init__(self, net: Union[str, BayesNet]):
         """
@@ -66,7 +67,9 @@ class BNReasoner:
         for p in prune:
             self.__del_edge_and_replace_cpt(edge=p, evidence=(p[0], E[p[0]]))
 
-    def __del_edge_and_replace_cpt(self, edge: Tuple[str, str], evidence: Tuple[str, bool]):
+    def __del_edge_and_replace_cpt(
+        self, edge: Tuple[str, str], evidence: Tuple[str, bool]
+    ):
         self.bn.del_edge(edge)
         # We neeed to implement CPT replacement for pruned edges
         self.__replace_cpt(cpt_variable=edge[1], evidence=evidence)
@@ -76,10 +79,10 @@ class BNReasoner:
         evidence_var, truth = evidence
 
         old_cpt = self.bn.get_cpt(cpt_variable)
-        new_cpt = old_cpt[old_cpt[evidence_var] == truth].drop([evidence_var], axis=1, inplace=False)
+        new_cpt = old_cpt[old_cpt[evidence_var] == truth].drop(
+            [evidence_var], axis=1, inplace=False
+        )
         self.bn.update_cpt(variable=cpt_variable, cpt=new_cpt)
-
-
 
     # TODO Given query variables Q and a possibly empty evidence E, compute
     # the marginal distribution P(Q|E) (12pts). (Note that Q is a subset of
@@ -95,53 +98,59 @@ class BNReasoner:
     # TODO liberate the settlements
     def MEP(self):
         pass
-    
-    #Get the MINIMAL DEGREE order of variable eliminiation
+
+    # Get the MINIMAL DEGREE order of variable eliminiation
     def min_degree_order(self):
         interaction = self.bn.get_interaction_graph()
         pi = []
-        for i in range(0,len(interaction.nodes)):
-            print("interaction.nodes: ", interaction.nodes)        
+        for i in range(0, len(interaction.nodes)):
+            print("interaction.nodes: ", interaction.nodes)
             print("interaction.edges: ", interaction.edges)
 
-            #get node with min degree
+            # get node with min degree
             degrees = {}
             for node in interaction.nodes:
-                degrees[node] = 0 
-                for a,b in interaction.edges:
+                degrees[node] = 0
+                for a, b in interaction.edges:
                     if a == node or b == node:
                         degrees[node] += 1
-            
+
             print("node degrees: ", degrees)
             min_degree_node = min(degrees, key=degrees.get)
             pi.append(min_degree_node)
-            
-            #get neighbors of min grade node
+
+            # get neighbors of min grade node
             neighbors = []
-            for a,b in interaction.edges:
-                if a == min_degree_node: 
+            for a, b in interaction.edges:
+                if a == min_degree_node:
                     neighbors.append(b)
                 elif b == min_degree_node:
                     neighbors.append(a)
-            print("\tmin_degree_node: {}\t-->neighbors: {}\n".format(min_degree_node,neighbors))
-            
-            #add an edge between every pair of non-adjacent neighbors of min_degree_node
+            print(
+                "\tmin_degree_node: {}\t-->neighbors: {}\n".format(
+                    min_degree_node, neighbors
+                )
+            )
+
+            # add an edge between every pair of non-adjacent neighbors of min_degree_node
             if len(neighbors) > 1:
                 for comb in list(combinations(neighbors, 2)):
-                    interaction.add_edge(comb[0],comb[1]) #if the edge already exists, then this don't do anything
-            
-            #delete variable min_degree_node 
+                    interaction.add_edge(
+                        comb[0], comb[1]
+                    )  # if the edge already exists, then this don't do anything
+
+            # delete variable min_degree_node
             interaction.remove_node(min_degree_node)
 
         print("Min Degree order PI= ", pi)
         return pi
 
-    #Get the MINIMAL FILL order of variable eliminiation
+    # Get the MINIMAL FILL order of variable eliminiation
     def min_fill_order(self):
         interaction = self.bn.get_interaction_graph()
         pi = []
-        
-        for i in range(0,len(interaction.nodes)):
+
+        for i in range(0, len(interaction.nodes)):
             # print("nodescls = ",interaction.nodes)
             counter = {}
             add_edges = {}
@@ -149,36 +158,38 @@ class BNReasoner:
 
                 add_edges[node] = []
                 neighbors = []
-                for a,b in interaction.edges:
-                    if a == node: 
+                for a, b in interaction.edges:
+                    if a == node:
                         neighbors.append(b)
                     elif b == node:
                         neighbors.append(a)
-                
-                #count how many edges needs to be created if this variable is removed
+
+                # count how many edges needs to be created if this variable is removed
                 counter[node] = 0
                 if len(neighbors) > 1:
                     for comb in list(combinations(neighbors, 2)):
-                        if comb not in interaction.edges or tuple(reversed(comb)) not in (interaction.edges):
+                        if comb not in interaction.edges or tuple(
+                            reversed(comb)
+                        ) not in (interaction.edges):
                             counter[node] += 1
                             add_edges[node].append(comb)
-                
-            #get the node which add the min number of edges if it is removed
-            min_fill_node = min(counter, key=counter.get)
-                
-            #add an edge between every pair of non-adjacent neighbors of min_degree_node
-            if len(add_edges[min_fill_node]) > 0: 
-                for ne in add_edges[min_fill_node]:
-                    interaction.add_edge(ne[0],ne[1])
 
-            #delete variable min_degree_node 
+            # get the node which add the min number of edges if it is removed
+            min_fill_node = min(counter, key=counter.get)
+
+            # add an edge between every pair of non-adjacent neighbors of min_degree_node
+            if len(add_edges[min_fill_node]) > 0:
+                for ne in add_edges[min_fill_node]:
+                    interaction.add_edge(ne[0], ne[1])
+
+            # delete variable min_degree_node
             interaction.remove_node(min_fill_node)
             pi.append(min_fill_node)
-            
+
         print("Min FILL order PI = ", pi)
         return pi
 
-    
+
 # Mainly for trying things
 def main():
 
@@ -211,6 +222,7 @@ def main():
 
     main_martin()
 
+
 def main_martin():
     net_path = "testing/interaction_graph_example.BIFXML"
     net_path = "testing/dog_problem.BIFXML"
@@ -221,7 +233,7 @@ def main_martin():
     reasoner.bn.draw_structure()
 
     reasoner = BNReasoner(net=net_path)
-    
+
     # reasoner.min_degree_order()
     # reasoner.min_fill_order()
 
