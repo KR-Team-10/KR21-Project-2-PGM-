@@ -2,6 +2,7 @@ from typing import Union, List, Tuple, Dict
 from BayesNet import BayesNet
 from itertools import combinations
 from copy import deepcopy
+import pandas as pd
 
 
 class BNReasoner:
@@ -22,9 +23,17 @@ class BNReasoner:
     # TODO: Remove TODO's as we go
     # Hit it, hit it, get it, get it
 
-    # TODO Given three sets of variables X, Y , and Z, determine whether X
-    # is independent of Y given Z. (5pts)
+    # d-Separation (5pts)
     def d_separation(self, X: List[str], Z: List[str], Y: List[str]) -> bool:
+        """
+        Given disjoint sets of variables X, Y and Z, determines whether X is independent
+        of Y given Z.
+
+        :param X: A list of variable name strings.
+        :param Z: A list of variable name strings.
+        :param Y: A list of variable name strings.
+        :return: True if X s is independent of Y given Z, False otherwise.
+        """
         nodes_pruned, edges_pruned = True, True
         while nodes_pruned or edges_pruned:
             if nodes_pruned:
@@ -33,61 +42,21 @@ class BNReasoner:
                 edges_pruned = self.__dseparation_edge_prune(X, Y, Z)
         return self.dsep_bn.disconnected(X, Y)
 
-    # TODO We need to check my implementation because in the slides its XYZ insted of queries and evidence
-    def network_pruning(self, X: List[str], Y: List[str], Z: List[str]):
-        """
-        Prunes the edges and nodes of the structure.
-        Deletes every leaf node W ∉ X∪Y∪Z.
-        Deletes all edges outgoing from nodes in Z.
-        :param X: A list of variable names.
-        :param Y: A list of variable names.
-        :param Z: A list of variable names. X and Y are d-separated with respect to Z.
-        """
-        self.__dseparation_node_prune(X, Y, Z)
-        self.__dseparation_edge_prune(X, Y, Z)
-
-    # Deletes every leaf node W ∉ X∪Y∪Z
-    def __dseparation_node_prune(
-        self, X: List[str], Y: List[str], Z: List[str]
-    ) -> bool:
-        prune = []
-        for W in self.dsep_bn.get_all_variables():
-            if self.dsep_bn.descendants(W) == []:  # If W is a leaf node
-                if W not in (X + Y + Z):  # If W ∉ X∪Y∪Z
-                    prune.append(W)
-        for p in prune:
-            self.dsep_bn.del_var(p)
-        return prune != []
-
-    # Deletes all edges outgoing from nodes in Z
-    def __dseparation_edge_prune(
-        self, X: List[str], Y: List[str], Z: List[str]
-    ) -> bool:
-        prune = []
-        for edge in self.dsep_bn.structure.edges:
-            if edge[0] in Z:
-                prune.append(edge)
-        for p in prune:
-            self.dsep_bn.del_edge(p)
-        return prune != []
-
-    # TODO Given a set of variables X in the Bayesian network,
-    # compute a good ordering for elimination of X based on the min-degree
-    # heuristics (2pts) and the min-fill heuristics (2pts).
-    # (Hint: you get the interaction graph ”for free” from the BayesNet class)
+    # Ordering (2 + 2pts)
     def ordering(self, heuristic="degree"):
+        """
+        Given a set of variables X in the Bayesian network,
+        computes a good ordering for elimination of X based on the min-degree or min-fill heuristic.
 
+        :param heuristic: Set to 'degree' for min-degree ordering or 'fill' for min-fill ordering.
+        """
         if heuristic.lower() not in ["degree", "fill"]:
             raise Exception
-
         if heuristic == "degree":
             return self.__min_degree_order()
         return self.__min_fill_order()
 
-    # TODO Given a set of query variables Q and evidence E, node- and
-    # edge-prune the Bayesian network s.t. queries of the form P(Q|E)
-    # can still be correctly calculated (5pts).
-    # TODO We need to check my implementation because in the slides its XYZ insted of queries and evidence
+    # Network Pruning (5pts)
     def network_pruning(self, Q: List[str], E: Dict[str, bool]):
         """
         Prunes the edges and nodes of the structure.
@@ -99,7 +68,107 @@ class BNReasoner:
         self.__node_prune(Q, E)
         self.__edge_prune(E)
 
-    # TODO Please check my work
+    # TODO Given query variables Q and a possibly empty evidence E, compute
+    # the marginal distribution P(Q|E) (12pts). (Note that Q is a subset of
+    # the variables in the Bayesian network X with Q⊂X but can also be Q=X.)
+    # Marginal Distributions (12pts)
+    # TODO ve_pr2 algorithm
+    def marginal_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
+        print("Q = ", Q)
+        print("E= ", E)
+        print("pi = ", pi)
+
+        cpts = {}
+        S = {}
+
+        for var in self.bn.get_all_variables():
+
+            cpts[var] = self.bn.get_cpt(var)
+            S[var] = self.bn.get_compatible_instantiations_table(
+                pd.Series(E), cpts[var]
+            )
+            print(S[var])
+
+        for i in range(0, len(pi)):
+            # f <- PI_k ( f_k) where f_k belongs to the S and mentions pi(i)
+            pi_i = pi[i]
+
+            print("\nvar : ", pi_i)
+
+            for cpt in S:
+                # TODO: trying to get the CPTs that mention pi(i)...
+                var_names = [v for v in S[pi_i].columns if v != "p"]
+
+            print(var_names)
+
+    # TODO @Martin, if you can check this out
+    def multiply_factors(self, factors: List[pd.DataFrame]) -> pd.DataFrame:
+        # Getting the variables of the new factor
+        Z = self.__get_vars(factors)
+        # Creating our factor f over Z
+
+        permutations = []
+        for i in product([True, False], repeat=len(Z)):
+            permutations.append(list(i) + [1])
+
+        f = pd.DataFrame(permutations, columns=list(Z) + ["p"])
+
+        # TODO @Martin we need to fill our new factor with the probabilities and keep multiplying
+        pass
+
+    # Get's the set of all variables of a list of factors
+    # Or the set of variables that the resulting factor will be over
+    def __get_vars(self, factors: List[pd.DataFrame]):
+        V = set()
+        for factor in factors:
+            for variable in list(factor.columns):
+                if variable != "p":
+                    V.add(variable)
+        return V
+
+    # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
+    # evidence E, compute the most likely instantiations of Q (12pts).
+    def MAP(self):
+        pass
+
+    # TODO liberate the settlements
+    def MEP(self):
+        pass
+
+    def dsep_network_pruning(self, X: List[str], Y: List[str], Z: List[str]):
+        """
+        Prunes the edges and nodes of the structure.
+        Deletes every leaf node W ∉ X∪Y∪Z.
+        Deletes all edges outgoing from nodes in Z.
+
+        :param X: A list of variable name strings.
+        :param Y: A list of variable name strings.
+        :param Z: A list of variable name strings. X and Y are d-separated with respect to Z.
+        """
+        self.__dsep_node_prune(X, Y, Z)
+        self.__dsep_edge_prune(X, Y, Z)
+
+    # Deletes every leaf node W ∉ X∪Y∪Z
+    def __dsep_node_prune(self, X: List[str], Y: List[str], Z: List[str]) -> bool:
+        prune = []
+        for W in self.dsep_bn.get_all_variables():
+            if self.dsep_bn.descendants(W) == []:  # If W is a leaf node
+                if W not in (X + Y + Z):  # If W ∉ X∪Y∪Z
+                    prune.append(W)
+        for p in prune:
+            self.dsep_bn.del_var(p)
+        return prune != []
+
+    # Deletes all edges outgoing from nodes in Z
+    def __dsep_edge_prune(self, X: List[str], Y: List[str], Z: List[str]) -> bool:
+        prune = []
+        for edge in self.dsep_bn.structure.edges:
+            if edge[0] in Z:
+                prune.append(edge)
+        for p in prune:
+            self.dsep_bn.del_edge(p)
+        return prune != []
+
     # Deletes every leaf node W ∉ Q∪E
     def __node_prune(self, Q: List[str], E: Dict[str, bool]):
         prune = []
@@ -109,7 +178,7 @@ class BNReasoner:
                     prune.append(W)
         [self.bn.del_var(p) for p in prune]
 
-    # Deletes all edges U from nodes in E
+    # Deletes all edges U ourgoing from nodes in E
     def __edge_prune(self, E: Dict[str, bool]):
         prune = []
         for edge in self.bn.structure.edges:
@@ -122,10 +191,8 @@ class BNReasoner:
         self, edge: Tuple[str, str], evidence: Tuple[str, bool]
     ):
         self.bn.del_edge(edge)
-        # We neeed to implement CPT replacement for pruned edges
         self.__replace_cpt(cpt_variable=edge[1], evidence=evidence)
 
-    # TODO Look at slide 9 of PGM-4
     def __replace_cpt(self, cpt_variable: str, evidence: Tuple[str, bool]):
         evidence_var, truth = evidence
 
@@ -134,21 +201,6 @@ class BNReasoner:
             [evidence_var], axis=1, inplace=False
         )
         self.bn.update_cpt(variable=cpt_variable, cpt=new_cpt)
-
-    # TODO Given query variables Q and a possibly empty evidence E, compute
-    # the marginal distribution P(Q|E) (12pts). (Note that Q is a subset of
-    # the variables in the Bayesian network X with Q⊂X but can also be Q=X.)
-    # def marginal_distribution(self, Q: list[str], E: Dict[str, bool]):
-    #     pass
-
-    # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
-    # evidence E, compute the most likely instantiations of Q (12pts).
-    def MAP(self):
-        pass
-
-    # TODO liberate the settlements
-    def MEP(self):
-        pass
 
     # Get the MINIMAL DEGREE order of variable eliminiation
     def __min_degree_order(self):
@@ -231,41 +283,6 @@ class BNReasoner:
         print("Min FILL order PI = ", pi)
         return pi
 
-    #TODO ve_pr2 algorithm 
-    #Given a Bayesian Network, a subset of variables Q, a set E of instantiaton of some variables, and an ordering Pi 
-    def marginal_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
-        print("Q = ", Q)
-        print("E= ", E)
-        print("pi = ", pi)
-        
-        cpts = {}
-        S = {}
-
-        for var in self.bn.get_all_variables():
-
-            cpts[var] = self.bn.get_cpt(var)
-            S[var] = self.bn.get_compatible_instantiations_table(pd.Series(E),cpts[var])
-            print(S[var])
-
-        for i in range(0,len(pi)):
-            # f <- PI_k ( f_k) where f_k belongs to the S and mentions pi(i)
-            pi_i = pi[i]
-            
-            print("\nvar : ", pi_i)
-            
-            for cpt in S:
-                #TODO: trying to get the CPTs that mention pi(i)...
-                var_names = [
-                    v for v in S[pi_i].columns 
-                    if v != 'p'
-                ]
-            
-            print(var_names)
-            
-
-    # PGM lecture 3, slide 13
-    # def multiply_factors(self, factors: List[pd.DataFrame]):
-
 
 # Mainly for trying things
 def main():
@@ -307,11 +324,12 @@ def main():
 
 def main_martin():
     net_path = "testing/abc_example.BIFXML"
-    
+
     reasoner = BNReasoner(net=net_path)
 
     pi = reasoner.ordering()
-    reasoner.marginal_distribution(["C"],{"A":True},pi)
+    reasoner.marginal_distribution(["C"], {"A": True}, pi)
+
 
 if __name__ == "__main__":
     main()
