@@ -292,3 +292,20 @@ class BayesNet:
             and v not in self.parents(variable)
             and v != variable
         ]
+
+    # Returns if two sets of variables are disconnected in the structure
+    def disconnected(self, X: List[str], Y: List[str]) -> bool:
+        XReach, YReach = set(), set()
+        for x in X:
+            XReach.add(x)
+            [XReach.add(d) for d in self.descendants(x)]
+        for y in Y:
+            YReach.add(y)
+            [YReach.add(d) for d in self.descendants(y)]
+        print(XReach)
+        print(YReach)
+
+        for x in X:
+            if x in YReach:
+                return False
+        return True
