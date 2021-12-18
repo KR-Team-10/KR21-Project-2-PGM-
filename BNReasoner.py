@@ -2,6 +2,7 @@ from typing import Union, List, Tuple, Dict
 from BayesNet import BayesNet
 from itertools import combinations
 import copy
+import pandas as pd
 
 
 class BNReasoner:
@@ -63,7 +64,8 @@ class BNReasoner:
     # heuristics (2pts) and the min-fill heuristics (2pts).
     # (Hint: you get the interaction graph ”for free” from the BayesNet class)
     def ordering(self, heuristic="degree"):
-        if heuristic.lower not in ["degree", "fill"]:
+
+        if heuristic.lower() not in ["degree", "fill"]:
             raise Exception
 
         if heuristic == "degree":
@@ -141,9 +143,6 @@ class BNReasoner:
         interaction = self.bn.get_interaction_graph()
         pi = []
         for i in range(0, len(interaction.nodes)):
-            print("interaction.nodes: ", interaction.nodes)
-            print("interaction.edges: ", interaction.edges)
-
             # get node with min degree
             degrees = {}
             for node in interaction.nodes:
@@ -152,7 +151,6 @@ class BNReasoner:
                     if a == node or b == node:
                         degrees[node] += 1
 
-            print("node degrees: ", degrees)
             min_degree_node = min(degrees, key=degrees.get)
             pi.append(min_degree_node)
 
@@ -163,11 +161,6 @@ class BNReasoner:
                     neighbors.append(b)
                 elif b == min_degree_node:
                     neighbors.append(a)
-            print(
-                "\tmin_degree_node: {}\t-->neighbors: {}\n".format(
-                    min_degree_node, neighbors
-                )
-            )
 
             # add an edge between every pair of non-adjacent neighbors of min_degree_node
             if len(neighbors) > 1:
@@ -226,6 +219,41 @@ class BNReasoner:
         print("Min FILL order PI = ", pi)
         return pi
 
+    #TODO ve_pr2 algorithm 
+    #Given a Bayesian Network, a subset of variables Q, a set E of instantiaton of some variables, and an ordering Pi 
+    def marginal_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
+        print("Q = ", Q)
+        print("E= ", E)
+        print("pi = ", pi)
+        
+        cpts = {}
+        S = {}
+
+        for var in self.bn.get_all_variables():
+
+            cpts[var] = self.bn.get_cpt(var)
+            S[var] = self.bn.get_compatible_instantiations_table(pd.Series(E),cpts[var])
+            print(S[var])
+
+        for i in range(0,len(pi)):
+            # f <- PI_k ( f_k) where f_k belongs to the S and mentions pi(i)
+            pi_i = pi[i]
+            
+            print("\nvar : ", pi_i)
+            
+            for cpt in S:
+                #TODO: trying to get the CPTs that mention pi(i)...
+                var_names = [
+                    v for v in S[pi_i].columns 
+                    if v != 'p'
+                ]
+            
+            print(var_names)
+            
+
+    # PGM lecture 3, slide 13
+    # def multiply_factors(self, factors: List[pd.DataFrame]):
+
 
 # Mainly for trying things
 def main():
@@ -261,19 +289,12 @@ def main():
 
 
 def main_martin():
-    net_path = "testing/interaction_graph_example.BIFXML"
-    net_path = "testing/dog_problem.BIFXML"
-
-    reasoner = BNReasoner(net=net_path)
-    reasoner.network_pruning(Q=[], E={"family-out": True})
-
-    reasoner.bn.draw_structure()
-
+    net_path = "testing/abc_example.BIFXML"
+    
     reasoner = BNReasoner(net=net_path)
 
-    # reasoner.min_degree_order()
-    # reasoner.min_fill_order()
-
+    pi = reasoner.ordering()
+    reasoner.marginal_distribution(["C"],{"A":True},pi)
 
 if __name__ == "__main__":
     main()
