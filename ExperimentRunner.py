@@ -6,7 +6,7 @@ RUNS = 10
 
 
 class ExperimentRunner:
-    def __init__(self, data_directory="data", bn_folders=["large"]):
+    def __init__(self, data_directory="", bn_folders=["large"]):
         self.data_directory = data_directory
         self.bn_folders = bn_folders
 

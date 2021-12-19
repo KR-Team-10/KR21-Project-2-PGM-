@@ -88,38 +88,41 @@ class BNReasoner:
 
             cpts[var] = self.bn.get_cpt(var)
             # S[var] = self.bn.get_compatible_instantiations_table(pd.Series(E), cpts[var])
-            S.append(self.bn.get_compatible_instantiations_table(pd.Series(E), cpts[var]))
-            
+            S.append(
+                self.bn.get_compatible_instantiations_table(pd.Series(E), cpts[var])
+            )
+
         print(S)
         for i in range(0, len(pi)):
             # f <- PI_k ( f_k) where f_k belongs to the S and mentions pi(i)
             pi_i = pi[i]
 
-            print("\nPI({}) = : {}".format(i,pi_i))
-            factors_including_var = self.__get_factors_including_var(S,pi_i)
-            
-            f = self.multiply_factors(factors_including_var,pi_i)
-            
-            f_i = self.sum_out_var(f,pi_i)
+            print("\nPI({}) = : {}".format(i, pi_i))
+            factors_including_var = self.__get_factors_including_var(S, pi_i)
 
-            #TODO: remove elements S_including_var from S and add f_i
+            f = self.multiply_factors(factors_including_var, pi_i)
+
+            f_i = self.sum_out_var(f, pi_i)
+
+            # TODO: remove elements S_including_var from S and add f_i
             # print("type(S_including_var)= ,",type(S_including_var))
             # print("S.values = ", list(S.values()))
             # print("type(S.values) = ", type(list(S.values())))
             for factor in factors_including_var:
                 if factor in S:
-                    print("remove factor: \n",factor)
+                    print("remove factor: \n", factor)
                     S.remove(factor)
-            
+
             S.append(f_i)
 
             print("_____________________________________________")
             print("new S = ")
             [print(S[i]) for i in range(len(S))]
-            
-    
+
     def multiply_factors(self, factors: List[pd.DataFrame], var: str) -> pd.DataFrame:
-        print("\n****************************************************\nMULTIPLY FACTORS: ")
+        print(
+            "\n****************************************************\nMULTIPLY FACTORS: "
+        )
 
         if len(factors) == 1:
             return factors
@@ -130,33 +133,30 @@ class BNReasoner:
                 f2 = factors[1]
                 print("\nf1 = \n", f1)
                 print("\nf2 = \n", f2)
-                
-                mult = f1.merge(f2, on=[var])
-                mult['p'] = mult.p_x * mult.p_y
-                mult = mult.drop(['p_x','p_y'],axis=1)
 
-                factors = factors[2: ]
+                mult = f1.merge(f2, on=[var])
+                mult["p"] = mult.p_x * mult.p_y
+                mult = mult.drop(["p_x", "p_y"], axis=1)
+
+                factors = factors[2:]
                 factors.append(mult)
-                
+
                 print("\nRESULT factors = ")
-                [print(factors[i]) for i in range(0,len(factors)) ]            
+                [print(factors[i]) for i in range(0, len(factors))]
 
         return factors[0]
 
     def sum_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
         print("\n****************************************************\nSUM OUT: ")
         print("from factor: \n{}".format(factor))
-        print("sum out variable= ",var)
+        print("sum out variable= ", var)
         factor.groupby([var]).sum()
-        factor = factor.drop([var],axis=1)
-        
-        
+        factor = factor.drop([var], axis=1)
+
         print("result SUM OUT: new factor =\n{} ".format(factor))
         print("****************************************************")
-        
-        return factor      
-            
 
+        return factor
 
     def __get_factors_including_var(self, factors: List[pd.DataFrame], k: str):
         """
@@ -164,20 +164,19 @@ class BNReasoner:
 
         :param factors: set of factors
         :param k: variable k mentioned in some of the factors
-        """        
+        """
         V = set()
         factors_k = []
 
         for factor in factors:
             # print("\n\nfactor", factors[factor])
             # print("vars: ", list(factors[factor].columns))
-            
+
             # if k in list(factors[factor].columns):
             #     factors_k.append(factors[factor])
 
             if k in list(factor.columns):
                 factors_k.append(factor)
-
 
         return factors_k
 
@@ -369,4 +368,4 @@ def main_martin():
 
 
 if __name__ == "__main__":
-    main_martin()
+    main()
