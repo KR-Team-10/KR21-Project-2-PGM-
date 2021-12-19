@@ -1,7 +1,7 @@
 from typing import List, Tuple, Dict
 import networkx as nx
 import matplotlib.pyplot as plt
-from pgmpy.readwrite import XMLBIFReader
+from pgmpy.readwrite import XMLBIFReader, BIFReader
 import math
 import itertools
 import pandas as pd
@@ -37,17 +37,18 @@ class BayesNet:
         if not nx.is_directed_acyclic_graph(self.structure):
             raise Exception("The provided graph is not acyclic.")
 
-    def load_from_bifxml(self, file_path: str) -> None:
+    def load_from_bifxml(self, file_path: str, XML=True) -> None:
         """
         Load a BayesNet from a file in BIFXML file format. See description of BIFXML here:
         http://www.cs.cmu.edu/afs/cs/user/fgcozman/www/Research/InterchangeFormat/
 
         :param file_path: Path to the BIFXML file.
+        :param XML: Set to true for reading XMLBIF, otherwise just BIF.
         """
         # Read and parse the bifxml file
         with open(file_path) as f:
             bn_file = f.read()
-        bif_reader = XMLBIFReader(string=bn_file)
+        bif_reader = XMLBIFReader(string=bn_file) if XML else BIFReader(string=bn_file)
 
         # load cpts
         cpts = {}
@@ -88,21 +89,6 @@ class BayesNet:
         :return: List of children
         """
         return [c for c in self.structure.successors(variable)]
-
-    # TODO No idea what I was trying to do here but it ain't it chief.
-    def pr(self, variables: Dict[str, bool]) -> float:
-        """
-        Returns the prior of the variable assignment.
-        :param variables: Variable assignment to check.
-        :return: The prior as a floating point number.
-        """
-        pr = 0
-        cpts = [self.get_cpt(v) for v in variables]
-        for cpt in cpts:
-            for row in cpt.iterrows():
-                if all([v in row[1] and row[1][v] == variables[v] for v in variables]):
-                    pr += row[1]["p"]
-        return pr
 
     def get_cpt(self, variable: str) -> pd.DataFrame:
         """

@@ -8,7 +8,7 @@ import pandas as pd
 
 
 class BNReasoner:
-    def __init__(self, net: Union[str, BayesNet]):
+    def __init__(self, net: Union[str, BayesNet], XML=True):
         """
         :param net: either file path of the bayesian network in BIFXML format
         or BayesNet object
@@ -17,7 +17,7 @@ class BNReasoner:
             # constructs a BN object
             self.bn = BayesNet()
             # Loads the BN from an BIFXML file
-            self.bn.load_from_bifxml(net)
+            self.bn.load_from_bifxml(net, XML=XML)
         else:
             self.bn = net
         self.dsep_bn = deepcopy(self.bn)
@@ -153,10 +153,10 @@ class BNReasoner:
                 # print("\nf2 = \n", f2)
                 
                 mult = f1.merge(f2, on=[var])
-                mult['p'] = mult.p_x * mult.p_y
-                mult = mult.drop(['p_x','p_y'],axis=1)
+                mult["p"] = mult.p_x * mult.p_y
+                mult = mult.drop(["p_x", "p_y"], axis=1)
 
-                factors = factors[2: ]
+                factors = factors[2:]
                 factors.append(mult)
                 
                 # print("\nRESULT factors = ")
@@ -179,10 +179,8 @@ class BNReasoner:
         
         print("result SUM OUT: new factor =\n{} ".format(factor))
         print("****************************************************")
-        
-        return factor      
-            
 
+        return factor
 
     def __get_factors_including_var(self, factors: List[pd.DataFrame], k: str):
         """
@@ -190,20 +188,19 @@ class BNReasoner:
 
         :param factors: set of factors
         :param k: variable k mentioned in some of the factors
-        """        
+        """
         V = set()
         factors_k = []
 
         for factor in factors:
             # print("\n\nfactor", factors[factor])
             # print("vars: ", list(factors[factor].columns))
-            
+
             # if k in list(factors[factor].columns):
             #     factors_k.append(factors[factor])
 
             if k in list(factor.columns):
                 factors_k.append(factor)
-
 
         return factors_k
 
@@ -378,39 +375,11 @@ class BNReasoner:
 # Mainly for trying things
 def main():
 
-    # variables = list("ABCDEF")
-    # edges = [
-    #     ("A", "B"),
-    #     ("A", "C"),
-    #     ("B", "D"),
-    #     ("B", "E"),
-    #     ("C", "E"),
-    #     ("C", "F"),
-    # ]
-    # bn = BayesNet()
-    # bn.create_bn(variables, edges, {x: None for x in variables})
-    # reasoner = BNReasoner(bn)
-    # reasoner.network_pruning(Q=[], E={"A": True, "C": False})
-    # reasoner.bn.draw_structure()
-
-    # variables = list("ABCDE")
-    # edges = [
-    #     ("A", "B"),
-    #     ("A", "C"),
-    #     ("B", "D"),
-    #     ("C", "D"),
-    #     ("C", "E"),
-    # ]
-    # bn = BayesNet()
-    # bn.create_bn(variables, edges, {x: None for x in variables})
-    # reasoner = BNReasoner(bn)
-
     net_path = "testing/d_separation_example.BIFXML"
+
     reasoner = BNReasoner(net=net_path)
-    if reasoner.d_separation(X=["A", "S"], Z=["P", "B"], Y=["X", "D"]):
-        print("DSEP BIATCHHHH")
-    else:
-        print("No DSEP buckerrrrrrr")
+
+    reasoner.bn.draw_structure()
 
 
 def main_martin():
@@ -423,4 +392,4 @@ def main_martin():
 
 
 if __name__ == "__main__":
-    main_martin()
+    main()
