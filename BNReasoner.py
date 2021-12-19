@@ -39,9 +39,9 @@ class BNReasoner:
         nodes_pruned, edges_pruned = True, True
         while nodes_pruned or edges_pruned:
             if nodes_pruned:
-                nodes_pruned = self.__dseparation_node_prune(X, Y, Z)
+                nodes_pruned = self.__dsep_node_prune(X, Y, Z)
             if edges_pruned:
-                edges_pruned = self.__dseparation_edge_prune(X, Y, Z)
+                edges_pruned = self.__dsep_edge_prune(X, Y, Z)
         return self.dsep_bn.disconnected(X, Y)
 
     # Ordering (2 + 2pts)
@@ -86,8 +86,10 @@ class BNReasoner:
 
         for var in self.bn.get_all_variables():
             cpts[var] = self.bn.get_cpt(var)
-            if(len(E)!= 0):
-                S.append(self.bn.get_compatible_instantiations_table(pd.Series(E), cpts[var]))
+            if len(E) != 0:
+                S.append(
+                    self.bn.get_compatible_instantiations_table(pd.Series(E), cpts[var])
+                )
             else:
                 S.append(cpts[var])
 
@@ -145,26 +147,26 @@ class BNReasoner:
                 f2 = factors[1]
                 # print("\nf1 = \n", f1)
                 # print("\nf2 = \n", f2)
-                
+
                 mult = f1.merge(f2, on=[var])
                 mult["p"] = mult.p_x * mult.p_y
                 mult = mult.drop(["p_x", "p_y"], axis=1)
 
                 factors = factors[2:]
                 factors.append(mult)
-                
+
                 # print("\nRESULT factors = ")
-                # [print(factors[i]) for i in range(0,len(factors)) ]            
+                # [print(factors[i]) for i in range(0,len(factors)) ]
 
         return factors[0]
 
     def sum_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
         print("\n****************************************************\nSUM OUT: ")
         print("from factor: \n{}".format(factor))
-        print("sum out variable= ",var)
+        print("sum out variable= ", var)
 
         variables = list(factor.columns)
-        variables.remove('p')
+        variables.remove("p")
         variables.remove(var)
 
         factor = factor.groupby(variables, as_index=False).agg('sum')
