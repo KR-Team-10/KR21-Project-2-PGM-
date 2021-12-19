@@ -39,9 +39,9 @@ class BNReasoner:
         nodes_pruned, edges_pruned = True, True
         while nodes_pruned or edges_pruned:
             if nodes_pruned:
-                nodes_pruned = self.__dseparation_node_prune(X, Y, Z)
+                nodes_pruned = self.__dsep_node_prune(X, Y, Z)
             if edges_pruned:
-                edges_pruned = self.__dseparation_edge_prune(X, Y, Z)
+                edges_pruned = self.__dsep_edge_prune(X, Y, Z)
         return self.dsep_bn.disconnected(X, Y)
 
     # Ordering (2 + 2pts)
@@ -86,50 +86,58 @@ class BNReasoner:
 
         for var in self.bn.get_all_variables():
             cpts[var] = self.bn.get_cpt(var)
-            if(len(E)!= 0):
-                S.append(self.bn.get_compatible_instantiations_table(pd.Series(E), cpts[var]))
+            if len(E) != 0:
+                S.append(
+                    self.bn.get_compatible_instantiations_table(pd.Series(E), cpts[var])
+                )
             else:
                 S.append(cpts[var])
 
         S_joint = S
         S_evidence = deepcopy(S)
 
-        query_joint_prob = self.joint_distribution(Q,S_joint,pi)
-        print("-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.")
+        query_joint_prob = self.joint_distribution(Q, S_joint, pi)
+        print(
+            "-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-."
+        )
         # normalize_factor = self.joint_distribution(E_vars,S_evidence,pi)
-    
+
     # def joint_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
     def joint_distribution(self, Q: List[str], S: List[pd.DataFrame], pi: List[str]):
-            
+
         # [print(S(i) for i in range (0,len(S)))]
 
         for i in range(0, len(pi)):
             # f <- PI_k ( f_k) where f_k belongs to the S and mentions pi(i)
             pi_i = pi[i]
-            if pi_i not in Q: 
-                print("\nPI({}) = : {}".format(i,pi_i))
-                factors_including_var = self.__get_factors_including_var(S,pi_i)
-                
-                f = self.multiply_factors(factors_including_var,pi_i)
-                f_i = self.sum_out_var(f,pi_i)
+            if pi_i not in Q:
+                print("\nPI({}) = : {}".format(i, pi_i))
+                factors_including_var = self.__get_factors_including_var(S, pi_i)
 
-                #TODO: remove elements S_including_var from S and add f_i
+                f = self.multiply_factors(factors_including_var, pi_i)
+                f_i = self.sum_out_var(f, pi_i)
+
+                # TODO: remove elements S_including_var from S and add f_i
                 for factor in factors_including_var:
                     # print("factor: \n",factor)
                     # print("S: ")
                     # [print(S[i]) for i in range(0,len(S))]
                     # if factor in S:
-                        # S.remove(factor)
+                    # S.remove(factor)
                     for s_factor in S:
                         # print("/////////////////////////////////////////////////////////////////////////////////")
                         # print(factor.sort_index().sort_index(axis=1))
-                        
+
                         s_factor_prime = deepcopy(s_factor)
                         # print(s_factor.sort_index().sort_index(axis=1))
-                        
-                        if factor.sort_index().sort_index(axis=1).equals(s_factor_prime.sort_index().sort_index(axis=1)):
+
+                        if (
+                            factor.sort_index()
+                            .sort_index(axis=1)
+                            .equals(s_factor_prime.sort_index().sort_index(axis=1))
+                        ):
                             S.remove(s_factor)
-                
+
                 S.append(f_i)
                 print("_____________________________________________")
         return S
@@ -146,32 +154,32 @@ class BNReasoner:
                 f2 = factors[1]
                 # print("\nf1 = \n", f1)
                 # print("\nf2 = \n", f2)
-                
+
                 mult = f1.merge(f2, on=[var])
                 mult["p"] = mult.p_x * mult.p_y
                 mult = mult.drop(["p_x", "p_y"], axis=1)
 
                 factors = factors[2:]
                 factors.append(mult)
-                
+
                 # print("\nRESULT factors = ")
-                # [print(factors[i]) for i in range(0,len(factors)) ]            
+                # [print(factors[i]) for i in range(0,len(factors)) ]
 
         return factors[0]
 
     def sum_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
         print("\n****************************************************\nSUM OUT: ")
         print("from factor: \n{}".format(factor))
-        print("sum out variable= ",var)
+        print("sum out variable= ", var)
 
         variables = list(factor.columns)
-        variables.remove('p')
+        variables.remove("p")
         variables.remove(var)
 
-        factor = factor.groupby(variables, as_index=False).agg('sum')
-        
-        factor = factor.drop([var],axis=1)
-        
+        factor = factor.groupby(variables, as_index=False).agg("sum")
+
+        factor = factor.drop([var], axis=1)
+
         print("result SUM OUT: new factor =\n{} ".format(factor))
         print("****************************************************")
 
