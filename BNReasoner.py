@@ -96,7 +96,7 @@ class BNReasoner:
 
         query_joint_prob = self.joint_distribution(Q,S_joint,pi)
         print("-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.")
-        normalize_factor = self.joint_distribution(E_vars,S_evidence,pi)
+        # normalize_factor = self.joint_distribution(E_vars,S_evidence,pi)
     
     # def joint_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
     def joint_distribution(self, Q: List[str], S: List[pd.DataFrame], pi: List[str]):
@@ -113,8 +113,6 @@ class BNReasoner:
                 f = self.multiply_factors(factors_including_var,pi_i)
                 f_i = self.sum_out_var(f,pi_i)
 
-                new_S = []
-
                 #TODO: remove elements S_including_var from S and add f_i
                 for factor in factors_including_var:
                     # print("factor: \n",factor)
@@ -129,15 +127,12 @@ class BNReasoner:
                         s_factor_prime = deepcopy(s_factor)
                         # print(s_factor.sort_index().sort_index(axis=1))
                         
-                        if not factor.sort_index().sort_index(axis=1).equals(s_factor_prime.sort_index().sort_index(axis=1)):
-                            # S.remove(s_factor)
-                            new_S.append(s_factor)
+                        if factor.sort_index().sort_index(axis=1).equals(s_factor_prime.sort_index().sort_index(axis=1)):
+                            S.remove(s_factor)
                 
-                new_S.append(f_i)
-                print("new S = ")
-                [print(new_S[i]) for i in range(len(new_S))]
+                S.append(f_i)
                 print("_____________________________________________")
-        return new_S
+        return S
 
     def multiply_factors(self, factors: List[pd.DataFrame], var: str) -> pd.DataFrame:
         # print("\n****************************************************\nMULTIPLY FACTORS: ")
@@ -392,4 +387,4 @@ def main_martin():
 
 
 if __name__ == "__main__":
-    main()
+    main_martin()
