@@ -91,46 +91,45 @@ class BNReasoner:
             else:
                 S.append(cpts[var])
 
-        S_joint = S
+        S_joint = deepcopy(S)
         S_evidence = deepcopy(S)
 
         query_joint_prob = self.joint_distribution(Q,S_joint,pi)
+        print("FINAL: \n ",query_joint_prob)
         print("-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.")
-        # normalize_factor = self.joint_distribution(E_vars,S_evidence,pi)
+        normalize_factor = self.joint_distribution(E_vars,S_evidence,pi)
     
-    # def joint_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
     def joint_distribution(self, Q: List[str], S: List[pd.DataFrame], pi: List[str]):
             
-        # [print(S(i) for i in range (0,len(S)))]
-
+        [print(S[i]) for i in range (0,len(S))]
         for i in range(0, len(pi)):
             # f <- PI_k ( f_k) where f_k belongs to the S and mentions pi(i)
             pi_i = pi[i]
             if pi_i not in Q: 
                 print("\nPI({}) = : {}".format(i,pi_i))
                 factors_including_var = self.__get_factors_including_var(S,pi_i)
+                # new_S.append(self.__get_factors_excluding_var(S,pi_i))
                 
                 f = self.multiply_factors(factors_including_var,pi_i)
                 f_i = self.sum_out_var(f,pi_i)
 
-                #TODO: remove elements S_including_var from S and add f_i
+                #remove elements factors_including_var from S 
                 for factor in factors_including_var:
-                    # print("factor: \n",factor)
-                    # print("S: ")
-                    # [print(S[i]) for i in range(0,len(S))]
                     # if factor in S:
-                        # S.remove(factor)
-                    for s_factor in S:
-                        # print("/////////////////////////////////////////////////////////////////////////////////")
-                        # print(factor.sort_index().sort_index(axis=1))
-                        
-                        s_factor_prime = deepcopy(s_factor)
-                        # print(s_factor.sort_index().sort_index(axis=1))
-                        
-                        if factor.sort_index().sort_index(axis=1).equals(s_factor_prime.sort_index().sort_index(axis=1)):
-                            S.remove(s_factor)
+                    print("trying to remove factor: \n{}".format(factor))
+                    arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
+                    for i in range(0,len(arr)):
+                        if arr[i] == True: S.pop(i) 
+                    
+                    # S.remove( all[factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1) for s_factor in S)])
+                    # if factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1)):
+                    
                 
+                #then add new factor f_i to S
                 S.append(f_i)
+                
+                print("\n-result S: \n")
+                [print(S[i]) for i in range(0,len(S))]                
                 print("_____________________________________________")
         return S
 
@@ -172,8 +171,8 @@ class BNReasoner:
         
         factor = factor.drop([var],axis=1)
         
-        print("result SUM OUT: new factor =\n{} ".format(factor))
-        print("****************************************************")
+        # print("result SUM OUT: new factor =\n{} ".format(factor))
+        # print("****************************************************")
 
         return factor
 
@@ -188,13 +187,23 @@ class BNReasoner:
         factors_k = []
 
         for factor in factors:
-            # print("\n\nfactor", factors[factor])
-            # print("vars: ", list(factors[factor].columns))
-
-            # if k in list(factors[factor].columns):
-            #     factors_k.append(factors[factor])
-
             if k in list(factor.columns):
+                factors_k.append(factor)
+
+        return factors_k
+
+    def __get_factors_excluding_var(self, factors: List[pd.DataFrame], k: str):
+        """
+         Get the subset of factors mentioning variable k
+
+        :param factors: set of factors
+        :param k: variable k mentioned in some of the factors
+        """
+        V = set()
+        factors_k = []
+
+        for factor in factors:
+            if k not in list(factor.columns):
                 factors_k.append(factor)
 
         return factors_k
