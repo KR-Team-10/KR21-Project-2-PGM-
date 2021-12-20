@@ -45,18 +45,20 @@ class BNReasoner:
         return self.dsep_bn.disconnected(X, Y)
 
     # Ordering (2 + 2pts)
-    def ordering(self, heuristic="degree"):
+    def ordering(self, heuristic="rand"):
         """
         Given a set of variables X in the Bayesian network,
         computes a good ordering for elimination of X based on the min-degree or min-fill heuristic.
 
         :param heuristic: Set to 'degree' for min-degree ordering or 'fill' for min-fill ordering.
         """
-        if heuristic.lower() not in ["degree", "fill"]:
+        if heuristic.lower() not in ["degree", "fill", "rand"]:
             raise Exception
         if heuristic == "degree":
             return self.__min_degree_order()
-        return self.__min_fill_order()
+        elif heuristic == "fill":
+            return self.__min_fill_order()
+        return self.__rand_order()
 
     # Network Pruning (5pts)
     def network_pruning(self, Q: List[str], E: Dict[str, bool]):
@@ -219,11 +221,11 @@ class BNReasoner:
 
     # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
     # evidence E, compute the most likely instantiations of Q (12pts).
-    def MAP(self):
+    def MAP(self, ordering="rand"):
         pass
 
     # TODO liberate the settlements
-    def MEP(self):
+    def MPE(self, orderng="rand"):
         pass
 
     def dsep_network_pruning(self, X: List[str], Y: List[str], Z: List[str]):
@@ -373,6 +375,10 @@ class BNReasoner:
 
         print("Min FILL order PI = ", pi)
         return pi
+
+    # TODO implement random ordering
+    def __rand_order(self):
+        pass
 
 
 # Mainly for trying things
