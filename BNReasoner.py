@@ -1,6 +1,6 @@
 from typing import Union, List, Tuple, Dict
 
-from numpy import multiply
+from numpy import empty, multiply
 from BayesNet import BayesNet
 from itertools import combinations
 from copy import deepcopy
@@ -45,20 +45,18 @@ class BNReasoner:
         return self.dsep_bn.disconnected(X, Y)
 
     # Ordering (2 + 2pts)
-    def ordering(self, heuristic="rand"):
+    def ordering(self, heuristic="degree"):
         """
         Given a set of variables X in the Bayesian network,
         computes a good ordering for elimination of X based on the min-degree or min-fill heuristic.
 
         :param heuristic: Set to 'degree' for min-degree ordering or 'fill' for min-fill ordering.
         """
-        if heuristic.lower() not in ["degree", "fill", "rand"]:
+        if heuristic.lower() not in ["degree", "fill"]:
             raise Exception
         if heuristic == "degree":
             return self.__min_degree_order()
-        elif heuristic == "fill":
-            return self.__min_fill_order()
-        return self.__rand_order()
+        return self.__min_fill_order()
 
     # Network Pruning (5pts)
     def network_pruning(self, Q: List[str], E: Dict[str, bool]):
@@ -82,7 +80,6 @@ class BNReasoner:
         print("E= ", E)
         print("pi = ", pi)
 
-        E_vars = list(E.keys())
         cpts = {}
         S = []
 
@@ -95,91 +92,97 @@ class BNReasoner:
             else:
                 S.append(cpts[var])
 
-        S_joint = deepcopy(S)
-        S_evidence = deepcopy(S)
+        query_joint_prob = self.joint_distribution(Q,S,pi)
 
-        query_joint_prob = self.joint_distribution(Q,S_joint,pi)
-        print("FINAL: \n ",query_joint_prob)
-        print("-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.")
-        normalize_factor = self.joint_distribution(E_vars,S_evidence,pi)
+        posterior_marginal_distribution = self.normalize(query_joint_prob)
+
+        print("---------------------------------------------------------------------------------------------")
+        print("POSTERIOR MARGINAL DISTRIBUTUION: \n",posterior_marginal_distribution)
+        return posterior_marginal_distribution
+
     
     def joint_distribution(self, Q: List[str], S: List[pd.DataFrame], pi: List[str]):
             
         [print(S[i]) for i in range (0,len(S))]
         for i in range(0, len(pi)):
-            # f <- PI_k ( f_k) where f_k belongs to the S and mentions pi(i)
+            
             pi_i = pi[i]
-            if pi_i not in Q: 
-                print("\nPI({}) = : {}".format(i,pi_i))
-                factors_including_var = self.__get_factors_including_var(S,pi_i)
-                # new_S.append(self.__get_factors_excluding_var(S,pi_i))
-                
-                f = self.multiply_factors(factors_including_var,pi_i)
-                f_i = self.sum_out_var(f,pi_i)
+            print("\nPI({}) = : {}".format(i,pi_i))
 
-                #remove elements factors_including_var from S 
-                for factor in factors_including_var:
-                    # if factor in S:
-                    print("trying to remove factor: \n{}".format(factor))
-                    arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
-                    for i in range(0,len(arr)):
-                        if arr[i] == True: S.pop(i) 
-                    
-                    # S.remove( all[factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1) for s_factor in S)])
-                    # if factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1)):
-                    
+            #get factors mentioning pi(i)
+            factors_including_var = self.__get_factors_including_var(S,pi_i)
+            
+            # multiply all factors mentioning variable pi(i)
+            f = self.multiply_factors(factors_including_var,pi_i)
+            
+            #sum out
+            if pi_i not in Q: 
+                f_i = self.sum_out_var(f,pi_i)
+            else:
+                f_i = f
+
+            #remove elements factors_including_var from S 
+            for factor in factors_including_var:
+                arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
+                for i in range(0,len(arr)):
+                    if arr[i] == True: S.pop(i) 
                 
-                #then add new factor f_i to S
-                S.append(f_i)
+            #then add new factor f_i to S
+            S.append(f_i)
                 
-                print("\n-result S: \n")
-                [print(S[i]) for i in range(0,len(S))]                
-                print("_____________________________________________")
+            print("\n-result S: \n")
+            [print(S[i]) for i in range(0,len(S))]                
+            print("_____________________________________________")
+        
+        S = self.multiply_factors(S,'')
+        
         return S
 
     def multiply_factors(self, factors: List[pd.DataFrame], var: str) -> pd.DataFrame:
-        # print("\n****************************************************\nMULTIPLY FACTORS: ")
-        # print(factors)
+        
         if len(factors) == 1:
-            return factors
+            return factors[0]
         else:
-
             while len(factors) > 1:
                 f1 = factors[0]
                 f2 = factors[1]
-                # print("\nf1 = \n", f1)
-                # print("\nf2 = \n", f2)
 
-                mult = f1.merge(f2, on=[var])
+                if not var:
+                    var = list(f1.columns)
+                    var.remove("p")
+                else:
+                    var = list(var)
+
+                mult = f1.merge(f2, on=var)
                 mult["p"] = mult.p_x * mult.p_y
                 mult = mult.drop(["p_x", "p_y"], axis=1)
 
                 factors = factors[2:]
                 factors.append(mult)
 
-                # print("\nRESULT factors = ")
-                # [print(factors[i]) for i in range(0,len(factors)) ]
-
         return factors[0]
 
     def sum_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
-        print("\n****************************************************\nSUM OUT: ")
-        print("from factor: \n{}".format(factor))
-        print("sum out variable= ", var)
 
         variables = list(factor.columns)
         variables.remove("p")
         variables.remove(var)
 
-        factor = factor.groupby(variables, as_index=False).agg('sum')
+        if(len(variables)>0):
+            factor = factor.groupby(variables, as_index=False).agg('sum')
+            
+            factor = factor.drop([var],axis=1)
         
-        factor = factor.drop([var],axis=1)
         
-        # print("result SUM OUT: new factor =\n{} ".format(factor))
-        # print("****************************************************")
-
         return factor
 
+    def normalize(self, joint_probability: pd.DataFrame):
+        
+        normalize_factor = joint_probability['p'].sum()
+        joint_probability.p = joint_probability.p / normalize_factor
+
+        return joint_probability
+        
     def __get_factors_including_var(self, factors: List[pd.DataFrame], k: str):
         """
          Get the subset of factors mentioning variable k
@@ -196,22 +199,6 @@ class BNReasoner:
 
         return factors_k
 
-    def __get_factors_excluding_var(self, factors: List[pd.DataFrame], k: str):
-        """
-         Get the subset of factors mentioning variable k
-
-        :param factors: set of factors
-        :param k: variable k mentioned in some of the factors
-        """
-        V = set()
-        factors_k = []
-
-        for factor in factors:
-            if k not in list(factor.columns):
-                factors_k.append(factor)
-
-        return factors_k
-
     # Get's the set of all variables of a list of factors
     # Or the set of variables that the resulting factor will be over
     def __get_vars(self, factors: List[pd.DataFrame]):
@@ -224,11 +211,11 @@ class BNReasoner:
 
     # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
     # evidence E, compute the most likely instantiations of Q (12pts).
-    def MAP(self, ordering="rand"):
+    def MAP(self):
         pass
 
     # TODO liberate the settlements
-    def MPE(self, orderng="rand"):
+    def MEP(self):
         pass
 
     def dsep_network_pruning(self, X: List[str], Y: List[str], Z: List[str]):
@@ -379,10 +366,6 @@ class BNReasoner:
         print("Min FILL order PI = ", pi)
         return pi
 
-    # TODO implement random ordering
-    def __rand_order(self):
-        pass
-
 
 # Mainly for trying things
 def main():
@@ -400,7 +383,10 @@ def main_martin():
     reasoner = BNReasoner(net=net_path)
 
     pi = reasoner.ordering()
-    reasoner.marginal_distribution(["C"], {"A": True}, pi)
+    # reasoner.marginal_distribution(["C"], {"A": True}, pi)
+    reasoner.marginal_distribution(["B","C"], {"A": True}, pi)
+    # reasoner.marginal_distribution(["C"], {}, pi)
+    # reasoner.marginal_distribution(["A","B","C"], {}, pi)
 
 
 if __name__ == "__main__":
