@@ -105,48 +105,47 @@ class BNReasoner:
             
         [print(S[i]) for i in range (0,len(S))]
         for i in range(0, len(pi)):
-            # f <- PI_k ( f_k) where f_k belongs to the S and mentions pi(i)
+            
             pi_i = pi[i]
-
             print("\nPI({}) = : {}".format(i,pi_i))
-            if pi_i not in Q: 
-                
-                factors_including_var = self.__get_factors_including_var(S,pi_i)
-                f = self.multiply_factors(factors_including_var,pi_i)
-                f_i = self.sum_out_var(f,pi_i)
 
-                #remove elements factors_including_var from S 
-                for factor in factors_including_var:
-                    # print("trying to remove factor: \n{}".format(factor))
-                    arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
-                    for i in range(0,len(arr)):
-                        if arr[i] == True: S.pop(i) 
-                    
-                #then add new factor f_i to S
-                S.append(f_i)
+            #get factors mentioning pi(i)
+            factors_including_var = self.__get_factors_including_var(S,pi_i)
+            
+            # multiply all factors mentioning variable pi(i)
+            f = self.multiply_factors(factors_including_var,pi_i)
+            
+            #sum out
+            if pi_i not in Q: 
+                f_i = self.sum_out_var(f,pi_i)
+            else:
+                f_i = f
+
+            #remove elements factors_including_var from S 
+            for factor in factors_including_var:
+                arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
+                for i in range(0,len(arr)):
+                    if arr[i] == True: S.pop(i) 
+                
+            #then add new factor f_i to S
+            S.append(f_i)
                 
             print("\n-result S: \n")
             [print(S[i]) for i in range(0,len(S))]                
             print("_____________________________________________")
         
-        # if(len(S)>1):
         S = self.multiply_factors(S,'')
         
         return S
 
     def multiply_factors(self, factors: List[pd.DataFrame], var: str) -> pd.DataFrame:
-        # print("\n****************************************************\nMULTIPLY FACTORS: ")
-        # print("factors: \n",factors)
         
         if len(factors) == 1:
             return factors[0]
         else:
-
             while len(factors) > 1:
                 f1 = factors[0]
                 f2 = factors[1]
-                # print("\nf1 = \n", f1)
-                # print("\nf2 = \n", f2)
 
                 if not var:
                     var = list(f1.columns)
@@ -161,15 +160,9 @@ class BNReasoner:
                 factors = factors[2:]
                 factors.append(mult)
 
-                # print("\nRESULT factors = ")
-                # [print(factors[i]) for i in range(0,len(factors)) ]
-
         return factors[0]
 
     def sum_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
-        # print("\n****************************************************\nSUM OUT: ")
-        # print("sum out variable= ", var)
-        # print("from (multiplication of )factor: \n{}".format(factor))
 
         variables = list(factor.columns)
         variables.remove("p")
@@ -181,9 +174,6 @@ class BNReasoner:
             factor = factor.drop([var],axis=1)
         
         
-        # print("result SUM OUT: new factor =\n{} ".format(factor))
-        # print("****************************************************")
-
         return factor
 
     def normalize(self, joint_probability: pd.DataFrame):
@@ -193,9 +183,6 @@ class BNReasoner:
 
         return joint_probability
         
-        
-
-
     def __get_factors_including_var(self, factors: List[pd.DataFrame], k: str):
         """
          Get the subset of factors mentioning variable k
@@ -208,22 +195,6 @@ class BNReasoner:
 
         for factor in factors:
             if k in list(factor.columns):
-                factors_k.append(factor)
-
-        return factors_k
-
-    def __get_factors_excluding_var(self, factors: List[pd.DataFrame], k: str):
-        """
-         Get the subset of factors mentioning variable k
-
-        :param factors: set of factors
-        :param k: variable k mentioned in some of the factors
-        """
-        V = set()
-        factors_k = []
-
-        for factor in factors:
-            if k not in list(factor.columns):
                 factors_k.append(factor)
 
         return factors_k
@@ -413,7 +384,9 @@ def main_martin():
 
     pi = reasoner.ordering()
     # reasoner.marginal_distribution(["C"], {"A": True}, pi)
-    reasoner.marginal_distribution(["C"], {"A": True}, pi)
+    reasoner.marginal_distribution(["B","C"], {"A": True}, pi)
+    # reasoner.marginal_distribution(["C"], {}, pi)
+    # reasoner.marginal_distribution(["A","B","C"], {}, pi)
 
 
 if __name__ == "__main__":
