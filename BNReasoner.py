@@ -75,8 +75,8 @@ class BNReasoner:
         S = []
         cpts = {}
 
-        self.__node_prune(Q, E)
-        self.__edge_prune(E)
+        # self.__node_prune(Q, E)
+        # self.__edge_prune(E)
 
         for var in self.bn.get_all_variables():
             cpts[var] = self.bn.get_cpt(var)
@@ -177,7 +177,6 @@ class BNReasoner:
             factors_including_var = self.__get_factors_including_var(S, pi_i)
 
             # multiply all factors mentioning variable pi(i)
-            print(factors_including_var)
             f = self.multiply_factors(factors_including_var, pi_i)
 
             # sum out
@@ -210,8 +209,13 @@ class BNReasoner:
         return S
 
     def multiply_factors(self, factors: List[pd.DataFrame], var: str) -> pd.DataFrame:
-        print((factors))
+        # print("**************************************************************")
+        # print("MULTIPLY")
+        # print("factors: ")
+        # [print(factors[i]) for i in range(0,len(factors))]
+
         if len(factors) == 1:
+            # print("**************************************************************")
             return factors[0]
         else:
             while len(factors) > 1:
@@ -221,17 +225,22 @@ class BNReasoner:
                 if not var:
                     var = list(f1.columns)
                     var.remove("p")
-                    print(var)
+                    
                 else:
-                    var = [var] if isinstance(var, str) else var[0]
-
+                    # var = [var] if isinstance(var, str) else var[0]
+                    var = list(set(f1.columns) & set(f2.columns)) #get the common columns to do the merge
+                    var.remove('p')
+                
                 mult = f1.merge(f2, on=var)
                 mult["p"] = mult.p_x * mult.p_y
                 mult = mult.drop(["p_x", "p_y"], axis=1)
 
                 factors = factors[2:]
                 factors.append(mult)
+        
         print(factors)
+        # print("**************************************************************")
+
         return factors[0]
 
     def sum_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
@@ -482,7 +491,7 @@ def main_debuging():
     reasoner = BNReasoner(net=net_path)
 
     pi = reasoner.ordering()
-    print(pi)
-    reasoner.marginal_distribution(["Autism", "OCD"], {"ADHD": False}, pi)
+
+    print("\n\nMARGINAL DISTRIBUTION: \n",reasoner.marginal_distribution(["Autism", "OCD"], {"ADHD": False}, pi))
 if __name__ == "__main__":
     main_debuging()
