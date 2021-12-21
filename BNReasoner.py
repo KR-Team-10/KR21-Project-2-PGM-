@@ -112,8 +112,14 @@ class BNReasoner:
     # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
     # evidence E, compute the most likely instantiations of Q (12pts).
     def MAP(self,Q: List[str],E: Dict[str, bool], pi: List[str]):
-        Q = self.bn.get_all_variables()
-
+        pi_aux = deepcopy(pi)
+        for o in pi_aux:
+            if o in Q:
+                o_aux = o
+                pi.remove(o)
+                pi.append(o)
+    
+        
         self.__node_prune(Q,E)
         self.__edge_prune(E)
 
@@ -123,7 +129,7 @@ class BNReasoner:
         for i in range(0, len(pi)):
             
             pi_i = pi[i]
-            print("\nPI({}) = : {}".format(i,pi_i))
+            # print("\nPI({}) = : {}".format(i,pi_i))
 
             #get factors mentioning pi(i)
             factors_including_var = self.__get_factors_including_var(S,pi_i)
@@ -132,7 +138,10 @@ class BNReasoner:
                 # multiply all factors mentioning variable pi(i)
                 f = self.multiply_factors(factors_including_var,pi_i)
                 
-                f_i = self.max_out_var(f,pi_i)
+                if(pi_i in Q):
+                    f_i = self.max_out_var(f,pi_i)
+                else:
+                    f_i = self.sum_out_var(f,pi_i)
                 
                 #remove elements factors_including_var from S 
                 for factor in factors_including_var:
@@ -161,7 +170,7 @@ class BNReasoner:
         for i in range(0, len(pi)):
             
             pi_i = pi[i]
-            print("\nPI({}) = : {}".format(i,pi_i))
+            # print("\nPI({}) = : {}".format(i,pi_i))
 
             #get factors mentioning pi(i)
             factors_including_var = self.__get_factors_including_var(S,pi_i)
@@ -284,13 +293,13 @@ class BNReasoner:
         return factor
 
     def max_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
-        print("**************************************************************")
-        print("MAX OUT")
-        print("factor: \n",factor)
+        # print("**************************************************************")
+        # print("MAX OUT")
+        # print("factor: \n",factor)
         variables = list(factor.columns)
         variables.remove("p")
         variables.remove(var)
-        print("group by variables: \n",variables)
+        # print("group by variables: \n",variables)
 
         if(len(variables)>0):
             
@@ -305,14 +314,14 @@ class BNReasoner:
                     agg_dict
                 )     
             
-            print("result factor: \n",factor)
-            print("**************************************************************")
+            # print("result factor: \n",factor)
+            # print("**************************************************************")
             return factor
         else:
             factor = factor.loc[factor['p'] == factor['p'].max()]
-            print("result factor: \n",factor)
+            # print("result factor: \n",factor)
 
-        print("**************************************************************")
+        # print("**************************************************************")
         return factor
 
     def normalize(self, joint_probability: pd.DataFrame):
@@ -514,7 +523,7 @@ def main_martin():
     pi_map = ["O","Y","X","I","J"]
     
     # print(reasoner.MPE({"J":True,"O":False},pi_mpe))
-    print(reasoner.MAP(["I","J"],{"O":True},pi_map))
+    print("\n\nMAP: \n",reasoner.MAP(["I","J"],{"O":True},pi_map))
     # reasoner.marginal_distribution(["C"], {"A": True}, pi)
 
 def main_debuging():
@@ -524,8 +533,9 @@ def main_debuging():
     pi = reasoner.ordering()
 
     # print("\n\nMARGINAL DISTRIBUTION: \n",reasoner.marginal_distribution(["Autism", "OCD"], {"ADHD": False}, pi))
-   
-    print("\n\nMPE: \n",reasoner.MPE({"ADHD": False}, pi))
+    # print("\n\nMPE: \n",reasoner.MPE({"ADHD": False}, pi))
+    
+    print("\n\nMAP: \n",reasoner.MAP(["Autism","OCD"],{"ADHD": False}, pi))
 
 if __name__ == "__main__":
     main_debuging()
