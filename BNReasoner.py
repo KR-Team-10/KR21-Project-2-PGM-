@@ -1,8 +1,9 @@
+from math import factorial
 from typing import Union, List, Tuple, Dict
 
 from numpy import empty, multiply
 from BayesNet import BayesNet
-from itertools import combinations
+from itertools import combinations,product
 from copy import deepcopy
 import pandas as pd
 
@@ -70,18 +71,9 @@ class BNReasoner:
         self.__node_prune(Q, E)
         self.__edge_prune(E)
 
-    # TODO Given query variables Q and a possibly empty evidence E, compute
-    # the marginal distribution P(Q|E) (12pts). (Note that Q is a subset of
-    # the variables in the Bayesian network X with Q⊂X but can also be Q=X.)
-    # Marginal Distributions (12pts)
-    # TODO ve_pr2 algorithm
-    def marginal_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
-        print("Q = ", Q)
-        print("E= ", E)
-        print("pi = ", pi)
-
-        cpts = {}
+    def __get_compatible_cpts(self,E: Dict[str, bool]):
         S = []
+        cpts = {}
 
         for var in self.bn.get_all_variables():
             cpts[var] = self.bn.get_cpt(var)
@@ -92,6 +84,20 @@ class BNReasoner:
             else:
                 S.append(cpts[var])
 
+        return S
+
+    # TODO Given query variables Q and a possibly empty evidence E, compute
+    # the marginal distribution P(Q|E) (12pts). (Note that Q is a subset of
+    # the variables in the Bayesian network X with Q⊂X but can also be Q=X.)
+    # Marginal Distributions (12pts)
+    # TODO ve_pr2 algorithm
+    def marginal_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
+        print("Q = ", Q)
+        print("E= ", E)
+        print("pi = ", pi)
+
+        S = self.__get_compatible_cpts(E)
+
         query_joint_prob = self.joint_distribution(Q,S,pi)
 
         posterior_marginal_distribution = self.normalize(query_joint_prob)
@@ -100,7 +106,64 @@ class BNReasoner:
         print("POSTERIOR MARGINAL DISTRIBUTUION: \n",posterior_marginal_distribution)
         return posterior_marginal_distribution
 
-    
+
+    # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
+    # evidence E, compute the most likely instantiations of Q (12pts).
+    def MAP(self,E: Dict[str, bool], pi: List[str]):
+        print("oli")
+        
+
+    # TODO liberate the settlements
+    def MPE(self,E: Dict[str, bool], pi: List[str] ):
+        Q = self.bn.get_all_variables()
+        mpe_instantations = {}
+
+        self.__node_prune(Q,E)
+        self.__edge_prune(E)
+
+        S = self.__get_compatible_cpts(E)
+        [print(S[i]) for i in range (0,len(S))]
+
+        for i in range(0, len(pi)):
+            
+            pi_i = pi[i]
+            print("\nPI({}) = : {}".format(i,pi_i))
+
+            #get factors mentioning pi(i)
+            factors_including_var = self.__get_factors_including_var(S,pi_i)
+            
+            # multiply all factors mentioning variable pi(i)
+            f = self.multiply_factors(factors_including_var,pi_i)
+            
+            f_i = self.max_out_var(f,pi_i)
+            
+            #remove elements factors_including_var from S 
+            for factor in factors_including_var:
+                arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
+                for j in range(0,len(arr)):
+                    if arr[j] == True: S.pop(j) 
+                
+            #then add new factor f_i to S
+            S.append(f_i)
+                
+            print("\n-result S: \n")
+            [print(S[i]) for i in range(0,len(S))]                
+            print("_____________________________________________")
+
+            # for s in S:
+            #     print(s)            
+            #     if(len(s.index) == 1):
+            #         print("LENGHT 1")
+            #         # print(s.index)
+            #         print(s.iloc[0])
+            #         print(s.iloc[0][0])
+            #         # mpe_instantations[] = s.iloc[0][0]
+            # print("_____________________________________________")
+
+        print(mpe_instantations)
+        # S = self.multiply_factors(S,'')        
+
+                
     def joint_distribution(self, Q: List[str], S: List[pd.DataFrame], pi: List[str]):
             
         [print(S[i]) for i in range (0,len(S))]
@@ -150,8 +213,9 @@ class BNReasoner:
                 if not var:
                     var = list(f1.columns)
                     var.remove("p")
+                    print(var)
                 else:
-                    var = list(var)
+                    var = [var]
 
                 mult = f1.merge(f2, on=var)
                 mult["p"] = mult.p_x * mult.p_y
@@ -173,8 +237,38 @@ class BNReasoner:
             
             factor = factor.drop([var],axis=1)
         
-        
+       
         return factor
+
+    def max_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
+        # print("**************************************************************")
+        # print("MAX OUT")
+        print("factor: \n",factor)
+        variables = list(factor.columns)
+        variables.remove("p")
+        variables.remove(var)
+        print("group by variables: \n",variables)
+
+        if(len(variables)>0):
+            
+            agg_dict =  {
+                        'p':lambda x : max(x),    # Sum duration per group
+
+                    
+                    }
+
+            factor = factor.groupby(
+                variables
+                ,as_index=False
+                ).agg(
+                    agg_dict
+                )                
+                        
+            
+            return factor        
+
+        return factor #else
+        
 
     def normalize(self, joint_probability: pd.DataFrame):
         
@@ -208,15 +302,6 @@ class BNReasoner:
                 if variable != "p":
                     V.add(variable)
         return V
-
-    # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
-    # evidence E, compute the most likely instantiations of Q (12pts).
-    def MAP(self):
-        pass
-
-    # TODO liberate the settlements
-    def MEP(self):
-        pass
 
     def dsep_network_pruning(self, X: List[str], Y: List[str], Z: List[str]):
         """
@@ -378,16 +463,19 @@ def main():
 
 
 def main_martin():
-    net_path = "testing/abc_example.BIFXML"
+    # net_path = "testing/abc_example.BIFXML"
+    net_path = "testing/map_mpe_example.BIFXML"
+    reasoner = BNReasoner(net=net_path)
+    pi = ["J","I","X","Y","O"]
+    reasoner.MPE({"J":True,"O":False},pi)
+    # reasoner.marginal_distribution(["C"], {"A": True}, pi)
 
+def main_debuging():
+    net_path = "testing/psyc_disorders.BIFXML"
     reasoner = BNReasoner(net=net_path)
 
     pi = reasoner.ordering()
-    # reasoner.marginal_distribution(["C"], {"A": True}, pi)
-    reasoner.marginal_distribution(["B","C"], {"A": True}, pi)
-    # reasoner.marginal_distribution(["C"], {}, pi)
-    # reasoner.marginal_distribution(["A","B","C"], {}, pi)
-
-
+    print(pi)
+    reasoner.marginal_distribution(["Autism", "OCD"], {"ADHD": False}, pi)
 if __name__ == "__main__":
-    main_martin()
+    main_debuging()
