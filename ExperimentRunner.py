@@ -29,6 +29,9 @@ class ExperimentRunner:
                 # Create a BNReasoner with that Bayesian Network
                 net_path = os.path.join(self.data_directory, folder, filename)
 
+                net_path = (
+                    "/Users/nedim.azar/Desktop/VU/KR21-Project-2-PGM-/bayes/40.xml"
+                )
                 reasoner = BNReasoner(net_path)
 
                 self.experiment(
@@ -60,6 +63,12 @@ class ExperimentRunner:
         print(len(Q), len(Q_E), len(E))
 
         for heuristic in ["fill", "degree", "rand"]:
+            pi = reasoner.ordering(heuristic=heuristic)
+
+            # print(reasoner.marginal_distribution(Q_E, E, pi=pi))
+
+            print(reasoner.marginal_distribution(Q=Q, E={}, pi=pi))
+
             # TODO Time minFillMPE
             fill_mpe_start = time()
             fill_mpe = time() - fill_mpe_start
