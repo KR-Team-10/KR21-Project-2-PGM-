@@ -4,9 +4,6 @@ import random
 import os
 from time import time
 
-RUNS = 10
-QUERY_RATIO = 3
-
 
 class ExperimentRunner:
     def __init__(self, data_directory="", bn_folders=["large"]):
@@ -29,9 +26,6 @@ class ExperimentRunner:
                 # Create a BNReasoner with that Bayesian Network
                 net_path = os.path.join(self.data_directory, folder, filename)
 
-                net_path = (
-                    "/Users/nedim.azar/Desktop/VU/KR21-Project-2-PGM-/bayes/40.xml"
-                )
                 reasoner = BNReasoner(net_path)
 
                 self.experiment(
@@ -59,7 +53,7 @@ class ExperimentRunner:
         # The size of the MAP and MPE queries will be a ratio of the number of variables
         query_size = round(n_var / 3)
 
-        for x in range(10):
+        for x in range(1000):
             print(f"RUN #{x}")
             Q, Q_E, E = self.get_query_and_evidence(reasoner.bn)
 
@@ -68,9 +62,6 @@ class ExperimentRunner:
             pi_deg = reasoner.ordering(heuristic="degree")
             pi_fill = reasoner.ordering(heuristic="fill")
             pi_rand = reasoner.ordering(heuristic="rand")
-
-            print(reasoner.marginal_distribution(Q=Q, E={}, pi=pi))
-            # "n_nodes,minDegMAP,minFillMAP,randMAP,minDegMPE,minFillMPE,randMPE\n"
 
             try:
                 # Time minDegMAP
@@ -90,6 +81,7 @@ class ExperimentRunner:
                 print("MAP with FILL heuristic:", fill_map)
             except Exception:
                 print("MAP wih FILL failed :(")
+                fill_map = None
 
             try:
                 # Time randMAP
@@ -99,6 +91,7 @@ class ExperimentRunner:
                 print("MAP with RAND heuristic:", rand_map)
             except Exception:
                 print("MAP wih RAND failed :(")
+                rand_map = None
 
             try:
                 # Time minDegMPE
@@ -108,6 +101,7 @@ class ExperimentRunner:
                 print("MPE with DEGREE heuristic:", deg_mpe)
             except:
                 print("MPE with DEGREE failed :(")
+                deg_mpe = None
 
             try:
                 # Time minFillMPE
@@ -117,13 +111,17 @@ class ExperimentRunner:
                 print("MPE with FILL heuristic:", fill_mpe)
             except Exception:
                 print("MPE with FILL failed :(")
+                fill_mpe = None
+
             try:
                 # Time randMPE
                 rand_mpe_start = time()
+                reasoner.MPE(E=E, pi=pi_rand)
                 rand_mpe = time() - rand_mpe_start
                 print("MPE with RAND heuristic:", rand_mpe)
             except:
                 print("MPE with RAND failed :(")
+                rand_mpe = None
 
             with open(results_file, "a") as datafile:
                 datafile.write(

@@ -53,11 +53,14 @@ class BNReasoner:
 
         :param heuristic: Set to 'degree' for min-degree ordering or 'fill' for min-fill ordering.
         """
-        if heuristic.lower() not in ["degree", "fill"]:
+        if heuristic.lower() not in ["degree", "fill", "rand"]:
             raise Exception
         if heuristic == "degree":
             return self.__min_degree_order()
-        return self.__min_fill_order()
+        elif heuristic == "fill":
+            return self.__min_fill_order()
+        elif heuristic == "rand":
+            return self.__rand_order()
 
     # Network Pruning (5pts)
     def network_pruning(self, Q: List[str], E: Dict[str, bool]):
@@ -95,9 +98,6 @@ class BNReasoner:
     # Marginal Distributions (12pts)
     # TODO ve_pr2 algorithm
     def marginal_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
-        print("Q = ", Q)
-        print("E= ", E)
-        print("pi = ", pi)
 
         self.network_pruning(Q, E)
         S = self.__get_compatible_cpts(E)
@@ -119,7 +119,6 @@ class BNReasoner:
                 pi.append(o)
 
         S = self.__get_compatible_cpts(E)
-        [print(S[i]) for i in range(0, len(S))]
 
         for i in range(0, len(pi)):
 
@@ -163,7 +162,6 @@ class BNReasoner:
         Q = self.bn.get_all_variables()
 
         S = self.__get_compatible_cpts(E)
-        [print(S[i]) for i in range(0, len(S))]
 
         for i in range(0, len(pi)):
 
@@ -202,7 +200,6 @@ class BNReasoner:
 
     def joint_distribution(self, Q: List[str], S: List[pd.DataFrame], pi: List[str]):
 
-        [print(S[i]) for i in range(0, len(S))]
         for i in range(0, len(pi)):
 
             pi_i = pi[i]
@@ -462,6 +459,11 @@ class BNReasoner:
 
         return pi
 
+    def __rand_order(self):
+        variables = deepcopy(self.bn.get_all_variables())
+        random.shuffle(variables)
+        return variables
+
     # Get the MINIMAL FILL order of variable eliminiation
     def __min_fill_order(self):
         interaction = self.bn.get_interaction_graph()
@@ -526,7 +528,6 @@ def main_martin():
     pi_map = ["O", "Y", "X", "I", "J"]
 
     # print(reasoner.MPE({"J":True,"O":False},pi_mpe))
-    print("\n\nMAP: \n", reasoner.MAP(["I", "J"], {"O": True}, pi_map))
     # reasoner.marginal_distribution(["C"], {"A": True}, pi)
 
 
@@ -551,15 +552,11 @@ def main_debuging():
     reasoner = BNReasoner(net=net_path)
 
     Q, Q_E, E = get_query_and_evidence(reasoner.bn)
-    print(Q, Q_E, E, sep="\n")
 
     pi = reasoner.ordering()
 
     # print("\n\nMARGINAL DISTRIBUTION: \n",reasoner.marginal_distribution(["Autism", "OCD"], {"ADHD": False}, pi))
     # print("\n\nMPE: \n",reasoner.MPE({"ADHD": False}, pi))
-
-    print("\n\nMAP: \n", reasoner.MAP(Q=Q_E, E=E, pi=pi))
-    print("\n\nMAP: \n", reasoner.MAP(Q=Q_E, E=E, pi=pi))
 
 
 if __name__ == "__main__":
