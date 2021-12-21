@@ -19,7 +19,7 @@ class ExperimentRunner:
             i += 1
         with open(f"results/results_{i}.csv", "w") as results:
             results.write(
-                "n_nodes,minFillMPE,minDegMPE,minFillMAP,minDegMAP,randMPE,randMAP\n"
+                "n_nodes,minDegMAP,minFillMAP,randMAP,minDegMPE,minFillMPE,randMPE\n"
             )
 
         # For each dataset of different size
@@ -42,8 +42,8 @@ class ExperimentRunner:
         variable_names = bn.get_all_variables()
         n_var = len(variable_names)
 
-        Q_n = n_var // QUERY_RATIO
-        E_n = Q_n // 3
+        Q_n = n_var // 2
+        E_n = Q_n // 2
 
         Q = random.sample(variable_names, Q_n)
 
@@ -59,43 +59,75 @@ class ExperimentRunner:
         # The size of the MAP and MPE queries will be a ratio of the number of variables
         query_size = round(n_var / 3)
 
-        Q, Q_E, E = self.get_query_and_evidence(reasoner.bn)
-        print(len(Q), len(Q_E), len(E))
+        for x in range(10):
+            print(f"RUN #{x}")
+            Q, Q_E, E = self.get_query_and_evidence(reasoner.bn)
 
-        for heuristic in ["fill", "degree", "rand"]:
-            pi = reasoner.ordering(heuristic=heuristic)
+            reasoner.network_pruning(Q=Q_E, E=E)
 
-            # print(reasoner.marginal_distribution(Q_E, E, pi=pi))
+            pi_deg = reasoner.ordering(heuristic="degree")
+            pi_fill = reasoner.ordering(heuristic="fill")
+            pi_rand = reasoner.ordering(heuristic="rand")
 
             print(reasoner.marginal_distribution(Q=Q, E={}, pi=pi))
+            # "n_nodes,minDegMAP,minFillMAP,randMAP,minDegMPE,minFillMPE,randMPE\n"
 
-            # TODO Time minFillMPE
-            fill_mpe_start = time()
-            fill_mpe = time() - fill_mpe_start
+            try:
+                # Time minDegMAP
+                deg_map_start = time()
+                reasoner.MAP(Q=Q_E, E=E, pi=pi_deg)
+                deg_map = time() - deg_map_start
+                print("MAP with DEGREE heuristic:", deg_map)
+            except Exception:
+                print("MAP with DEGREE failed :(")
+                deg_map = None
 
-            # TODO Time minDegMPE
-            deg_mpe_start = time()
-            deg_mpe = time() - deg_mpe_start
+            try:
+                # Time minFillMAP
+                fill_map_start = time()
+                reasoner.MAP(Q=Q_E, E=E, pi=pi_fill)
+                fill_map = time() - fill_map_start
+                print("MAP with FILL heuristic:", fill_map)
+            except Exception:
+                print("MAP wih FILL failed :(")
 
-            # TODO Time minFillMAP
-            fill_map_start = time()
-            fill_map = time() - fill_map_start
+            try:
+                # Time randMAP
+                rand_map_start = time()
+                reasoner.MAP(Q=Q_E, E=E, pi=pi_rand)
+                rand_map = time() - rand_map_start
+                print("MAP with RAND heuristic:", rand_map)
+            except Exception:
+                print("MAP wih RAND failed :(")
 
-            # TODO Time minDegMAP
-            deg_map_start = time()
-            deg_map = time() - deg_map_start
+            try:
+                # Time minDegMPE
+                deg_mpe_start = time()
+                reasoner.MPE(E=E, pi=pi_deg)
+                deg_mpe = time() - deg_mpe_start
+                print("MPE with DEGREE heuristic:", deg_mpe)
+            except:
+                print("MPE with DEGREE failed :(")
 
-            # TODO Time randMPE
-            rand_mpe_start = time()
-            rand_mpe = time() - rand_mpe_start
-
-            # TODO Time randMPE
-            rand_map_start = time()
-            rand_map = time() - rand_map_start
+            try:
+                # Time minFillMPE
+                fill_mpe_start = time()
+                reasoner.MPE(E=E, pi=pi_fill)
+                fill_mpe = time() - fill_mpe_start
+                print("MPE with FILL heuristic:", fill_mpe)
+            except Exception:
+                print("MPE with FILL failed :(")
+            try:
+                # Time randMPE
+                rand_mpe_start = time()
+                rand_mpe = time() - rand_mpe_start
+                print("MPE with RAND heuristic:", rand_mpe)
+            except:
+                print("MPE with RAND failed :(")
 
             with open(results_file, "a") as datafile:
                 datafile.write(
-                    f"{n_var},{fill_mpe},{deg_mpe},{fill_map},{deg_map},{rand_mpe},{rand_map}\n"
+                    f"{n_var},{deg_map},{fill_map},{rand_map},{deg_mpe},{fill_mpe},{rand_mpe}\n"
                 )
 
 
