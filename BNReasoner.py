@@ -538,4 +538,4 @@ def main_debuging():
     print("\n\nMAP: \n",reasoner.MAP(["Autism","OCD"],{"ADHD": False}, pi))
 
 if __name__ == "__main__":
-    main_debuging()
+    main_martin()
