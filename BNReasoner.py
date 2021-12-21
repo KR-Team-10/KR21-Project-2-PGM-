@@ -111,13 +111,8 @@ class BNReasoner:
 
     # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
     # evidence E, compute the most likely instantiations of Q (12pts).
-    def MAP(self,E: Dict[str, bool], pi: List[str]):
-        print("oli")
-        
-    # TODO liberate the settlements
-    def MPE(self,E: Dict[str, bool], pi: List[str] ):
+    def MAP(self,Q: List[str],E: Dict[str, bool], pi: List[str]):
         Q = self.bn.get_all_variables()
-        mpe_instantations = {}
 
         self.__node_prune(Q,E)
         self.__edge_prune(E)
@@ -133,27 +128,64 @@ class BNReasoner:
             #get factors mentioning pi(i)
             factors_including_var = self.__get_factors_including_var(S,pi_i)
             
-            # multiply all factors mentioning variable pi(i)
-            f = self.multiply_factors(factors_including_var,pi_i)
-            
-            f_i = self.max_out_var(f,pi_i)
-            
-            #remove elements factors_including_var from S 
-            for factor in factors_including_var:
-                arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
-                for j in range(0,len(arr)):
-                    if arr[j] == True: S.pop(j) 
+            if(factors_including_var):
+                # multiply all factors mentioning variable pi(i)
+                f = self.multiply_factors(factors_including_var,pi_i)
                 
-            #then add new factor f_i to S
-            S.append(f_i)
+                f_i = self.max_out_var(f,pi_i)
                 
-            print("\n-result S: \n")
-            [print(S[i]) for i in range(0,len(S))]                
-            print("_____________________________________________")
+                #remove elements factors_including_var from S 
+                for factor in factors_including_var:
+                    arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
+                    for j in range(0,len(arr)):
+                        if arr[j] == True: S.pop(j) 
+                    
+                #then add new factor f_i to S
+                S.append(f_i)
+                    
+        S = self.multiply_factors(S,'')        
+        # print("_____________________________________________")
+        # [print(S[i]) for i in range(0,len(S))]                
+        # print("_____________________________________________")
+        return S
+        
+    def MPE(self,E: Dict[str, bool], pi: List[str] ):
+        Q = self.bn.get_all_variables()
 
-        print(mpe_instantations)
-        # S = self.multiply_factors(S,'')        
+        self.__node_prune(Q,E)
+        self.__edge_prune(E)
 
+        S = self.__get_compatible_cpts(E)
+        [print(S[i]) for i in range (0,len(S))]
+
+        for i in range(0, len(pi)):
+            
+            pi_i = pi[i]
+            print("\nPI({}) = : {}".format(i,pi_i))
+
+            #get factors mentioning pi(i)
+            factors_including_var = self.__get_factors_including_var(S,pi_i)
+            
+            if(factors_including_var):
+                # multiply all factors mentioning variable pi(i)
+                f = self.multiply_factors(factors_including_var,pi_i)
+                
+                f_i = self.max_out_var(f,pi_i)
+                
+                #remove elements factors_including_var from S 
+                for factor in factors_including_var:
+                    arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
+                    for j in range(0,len(arr)):
+                        if arr[j] == True: S.pop(j) 
+                    
+                #then add new factor f_i to S
+                S.append(f_i)
+                    
+        S = self.multiply_factors(S,'')        
+        # print("_____________________________________________")
+        # [print(S[i]) for i in range(0,len(S))]                
+        # print("_____________________________________________")
+        return S
                 
     def joint_distribution(self, Q: List[str], S: List[pd.DataFrame], pi: List[str]):
 
@@ -213,16 +245,18 @@ class BNReasoner:
                 f1 = factors[0]
                 f2 = factors[1]
 
-                if not var:
+                if not var: #this is for the last multiplication in case there is independent variables, so have tu multiply all independent factors
                     var = list(f1.columns)
                     var.remove("p")
+                    mult = f1.merge(f2, how='cross')
                     
                 else:
                     # var = [var] if isinstance(var, str) else var[0]
                     var = list(set(f1.columns) & set(f2.columns)) #get the common columns to do the merge
                     var.remove('p')
                 
-                mult = f1.merge(f2, on=var)
+                    mult = f1.merge(f2, on=var)
+
                 mult["p"] = mult.p_x * mult.p_y
                 mult = mult.drop(["p_x", "p_y"], axis=1)
 
@@ -250,8 +284,8 @@ class BNReasoner:
         return factor
 
     def max_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
-        # print("**************************************************************")
-        # print("MAX OUT")
+        print("**************************************************************")
+        print("MAX OUT")
         print("factor: \n",factor)
         variables = list(factor.columns)
         variables.remove("p")
@@ -262,8 +296,6 @@ class BNReasoner:
             
             agg_dict =  {
                         'p':lambda x : max(x),    # Sum duration per group
-
-                    
                     }
 
             factor = factor.groupby(
@@ -271,13 +303,17 @@ class BNReasoner:
                 ,as_index=False
                 ).agg(
                     agg_dict
-                )                
-                        
+                )     
             
-            return factor        
+            print("result factor: \n",factor)
+            print("**************************************************************")
+            return factor
+        else:
+            factor = factor.loc[factor['p'] == factor['p'].max()]
+            print("result factor: \n",factor)
 
-        return factor #else
-        
+        print("**************************************************************")
+        return factor
 
     def normalize(self, joint_probability: pd.DataFrame):
 
@@ -459,7 +495,6 @@ class BNReasoner:
         # print("Min FILL order PI = ", pi)
         return pi
 
-
 # Mainly for trying things
 def main():
 
@@ -474,8 +509,12 @@ def main_martin():
     # net_path = "testing/abc_example.BIFXML"
     net_path = "testing/map_mpe_example.BIFXML"
     reasoner = BNReasoner(net=net_path)
-    pi = ["J","I","X","Y","O"]
-    reasoner.MPE({"J":True,"O":False},pi)
+    
+    pi_mpe = ["J","I","X","Y","O"]
+    pi_map = ["O","Y","X","I","J"]
+    
+    # print(reasoner.MPE({"J":True,"O":False},pi_mpe))
+    print(reasoner.MAP(["I","J"],{"O":True},pi_map))
     # reasoner.marginal_distribution(["C"], {"A": True}, pi)
 
 def main_debuging():
@@ -484,6 +523,9 @@ def main_debuging():
 
     pi = reasoner.ordering()
 
-    print("\n\nMARGINAL DISTRIBUTION: \n",reasoner.marginal_distribution(["Autism", "OCD"], {"ADHD": False}, pi))
+    # print("\n\nMARGINAL DISTRIBUTION: \n",reasoner.marginal_distribution(["Autism", "OCD"], {"ADHD": False}, pi))
+   
+    print("\n\nMPE: \n",reasoner.MPE({"ADHD": False}, pi))
+
 if __name__ == "__main__":
     main_debuging()
