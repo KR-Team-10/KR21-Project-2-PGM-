@@ -1,9 +1,9 @@
 from math import factorial
 from typing import Union, List, Tuple, Dict
-
+import random
 from numpy import empty, multiply
 from BayesNet import BayesNet
-from itertools import combinations,product
+from itertools import combinations, product
 from copy import deepcopy
 import pandas as pd
 
@@ -53,11 +53,14 @@ class BNReasoner:
 
         :param heuristic: Set to 'degree' for min-degree ordering or 'fill' for min-fill ordering.
         """
-        if heuristic.lower() not in ["degree", "fill"]:
+        if heuristic.lower() not in ["degree", "fill", "rand"]:
             raise Exception
         if heuristic == "degree":
             return self.__min_degree_order()
-        return self.__min_fill_order()
+        elif heuristic == "fill":
+            return self.__min_fill_order()
+        elif heuristic == "rand":
+            return self.__rand_order()
 
     # Network Pruning (5pts)
     def network_pruning(self, Q: List[str], E: Dict[str, bool]):
@@ -71,7 +74,7 @@ class BNReasoner:
         self.__node_prune(Q, E)
         self.__edge_prune(E)
 
-    def __get_compatible_cpts(self,E: Dict[str, bool]):
+    def __get_compatible_cpts(self, E: Dict[str, bool]):
         S = []
         cpts = {}
 
@@ -95,19 +98,15 @@ class BNReasoner:
     # Marginal Distributions (12pts)
     # TODO ve_pr2 algorithm
     def marginal_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
-        print("Q = ", Q)
-        print("E= ", E)
-        print("pi = ", pi)
 
-        self.network_pruning(Q,E)
+        self.network_pruning(Q, E)
         S = self.__get_compatible_cpts(E)
 
-        query_joint_prob = self.joint_distribution(Q,S,pi)
+        query_joint_prob = self.joint_distribution(Q, S, pi)
 
         posterior_marginal_distribution = self.normalize(query_joint_prob)
 
         return posterior_marginal_distribution
-
 
     # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
     # evidence E, compute the most likely instantiations of Q (12pts).
@@ -119,83 +118,85 @@ class BNReasoner:
             if o in Q:
                 pi.remove(o)
                 pi.append(o)
-    
-        
-        self.__node_prune(Q,E)
-        self.__edge_prune(E)
 
         S = self.__get_compatible_cpts(E)
-        [print(S[i]) for i in range (0,len(S))]
 
         for i in range(0, len(pi)):
-            
+
             pi_i = pi[i]
 
-            #get factors mentioning pi(i)
-            factors_including_var = self.__get_factors_including_var(S,pi_i)
-            
-            if(factors_including_var):
+            # get factors mentioning pi(i)
+            factors_including_var = self.__get_factors_including_var(S, pi_i)
+
+            if factors_including_var:
                 # multiply all factors mentioning variable pi(i)
-                f = self.multiply_factors(factors_including_var,pi_i)
-                
-                if(pi_i in Q):
-                    f_i = self.max_out_var(f,pi_i)
+                f = self.multiply_factors(factors_including_var, pi_i)
+
+                if pi_i in Q:
+                    f_i = self.max_out_var(f, pi_i)
                 else:
-                    f_i = self.sum_out_var(f,pi_i)
-                
-                #remove elements factors_including_var from S 
+                    f_i = self.sum_out_var(f, pi_i)
+
+                # remove elements factors_including_var from S
                 for factor in factors_including_var:
-                    arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
-                    for j in range(0,len(arr)):
-                        if arr[j] == True: S.pop(j) 
-                    
-                #then add new factor f_i to S
+                    arr = [
+                        factor.sort_index()
+                        .sort_index(axis=1)
+                        .equals(s_factor.sort_index().sort_index(axis=1))
+                        for s_factor in S
+                    ]
+                    for j in range(0, len(arr)):
+                        if arr[j] == True:
+                            S.pop(j)
+
+                # then add new factor f_i to S
                 S.append(f_i)
                     
         S = self.multiply_factors(S,'')        
         S = self.max_out_row(S)
 
         return S
-        
-    def MPE(self,E: Dict[str, bool], pi: List[str] ):
+
+    def MPE(self, E: Dict[str, bool], pi: List[str]):
         Q = self.bn.get_all_variables()
 
-        self.__node_prune(Q,E)
-        self.__edge_prune(E)
-
         S = self.__get_compatible_cpts(E)
-        [print(S[i]) for i in range (0,len(S))]
 
         for i in range(0, len(pi)):
-            
+
             pi_i = pi[i]
             print("\nPI({}) = : {}".format(i,pi_i))
 
-            #get factors mentioning pi(i)
-            factors_including_var = self.__get_factors_including_var(S,pi_i)
-            
-            if(factors_including_var):
+            # get factors mentioning pi(i)
+            factors_including_var = self.__get_factors_including_var(S, pi_i)
+
+            if factors_including_var:
                 # multiply all factors mentioning variable pi(i)
-                f = self.multiply_factors(factors_including_var,pi_i)
-                
-                f_i = self.max_out_var(f,pi_i)
-                
-                #remove elements factors_including_var from S 
+                f = self.multiply_factors(factors_including_var, pi_i)
+
+                f_i = self.max_out_var(f, pi_i)
+
+                # remove elements factors_including_var from S
                 for factor in factors_including_var:
-                    arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
-                    for j in range(0,len(arr)):
-                        if arr[j] == True: S.pop(j) 
-                    
-                #then add new factor f_i to S
+                    arr = [
+                        factor.sort_index()
+                        .sort_index(axis=1)
+                        .equals(s_factor.sort_index().sort_index(axis=1))
+                        for s_factor in S
+                    ]
+                    for j in range(0, len(arr)):
+                        if arr[j] == True:
+                            S.pop(j)
+
+                # then add new factor f_i to S
                 S.append(f_i)
                     
         S = self.multiply_factors(S,'')        
         S = self.max_out_row(S)
         return S
-                
+
     def joint_distribution(self, Q: List[str], S: List[pd.DataFrame], pi: List[str]):
 
-        [print(S[i]) for i in range (0,len(S))]
         for i in range(0, len(pi)):
 
             pi_i = pi[i]
@@ -205,7 +206,7 @@ class BNReasoner:
             factors_including_var = self.__get_factors_including_var(S, pi_i)
 
             # multiply all factors mentioning variable pi(i)
-            if(factors_including_var):
+            if factors_including_var:
                 f = self.multiply_factors(factors_including_var, pi_i)
 
                 # sum out
@@ -232,7 +233,7 @@ class BNReasoner:
             # print("\n-result S: \n")
             # [print(S[i]) for i in range(0, len(S))]
             # print("_____________________________________________")
-        
+
         S = self.multiply_factors(S, "")
 
         return S
@@ -246,11 +247,13 @@ class BNReasoner:
                 f1 = factors[0]
                 f2 = factors[1]
 
-                if not var: #this is for the last multiplication in case there is independent variables, so have tu multiply all independent factors
+                if (
+                    not var
+                ):  # this is for the last multiplication in case there is independent variables, so have tu multiply all independent factors
                     var = list(f1.columns)
                     var.remove("p")
-                    mult = f1.merge(f2, how='cross')
-                    
+                    mult = f1.merge(f2, how="cross")
+
                 else:
                     var = list(set(f1.columns) & set(f2.columns)) #get the common columns to do the merge
                     var.remove('p')
@@ -271,12 +274,11 @@ class BNReasoner:
         variables.remove("p")
         variables.remove(var)
 
-        if(len(variables)>0):
-            factor = factor.groupby(variables, as_index=False).agg('sum')
-            
-            factor = factor.drop([var],axis=1)
-        
-       
+        if len(variables) > 0:
+            factor = factor.groupby(variables, as_index=False).agg("sum")
+
+            factor = factor.drop([var], axis=1)
+
         return factor
 
     def max_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
@@ -446,6 +448,11 @@ class BNReasoner:
 
         return pi
 
+    def __rand_order(self):
+        variables = deepcopy(self.bn.get_all_variables())
+        random.shuffle(variables)
+        return variables
+
     # Get the MINIMAL FILL order of variable eliminiation
     def __min_fill_order(self):
         interaction = self.bn.get_interaction_graph()
@@ -490,6 +497,7 @@ class BNReasoner:
         # print("Min FILL order PI = ", pi)
         return pi
 
+
 # Mainly for trying things
 def main():
 
@@ -521,15 +529,16 @@ def main_martin():
 
 
 def main_debuging():
-    net_path = "testing/psyc_disorders.BIFXML"
+    net_path = "bayes/15.xml"
     reasoner = BNReasoner(net=net_path)
+
+    Q, Q_E, E = get_query_and_evidence(reasoner.bn)
 
     pi = reasoner.ordering()
 
     # print("\n\nMARGINAL DISTRIBUTION: \n",reasoner.marginal_distribution(["Autism", "OCD"], {"ADHD": False}, pi))
     # print("\n\nMPE: \n",reasoner.MPE({"ADHD": False}, pi))
-    
-    print("\n\nMAP: \n",reasoner.MAP(["Autism","OCD"],{"ADHD": False}, pi))
+
 
 if __name__ == "__main__":
-    main_martin()
+    main_debuging()

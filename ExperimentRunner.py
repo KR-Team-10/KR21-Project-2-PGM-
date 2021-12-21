@@ -3,9 +3,7 @@ from BayesNet import BayesNet
 import random
 import os
 from time import time
-
-RUNS = 10
-QUERY_RATIO = 3
+from copy import deepcopy
 
 
 class ExperimentRunner:
@@ -19,7 +17,7 @@ class ExperimentRunner:
             i += 1
         with open(f"results/results_{i}.csv", "w") as results:
             results.write(
-                "n_nodes,minFillMPE,minDegMPE,minFillMAP,minDegMAP,randMPE,randMAP\n"
+                "n_nodes,minDegMAP,minFillMAP,randMAP,minDegMPE,minFillMPE,randMPE\n"
             )
 
         # For each dataset of different size
@@ -29,73 +27,120 @@ class ExperimentRunner:
                 # Create a BNReasoner with that Bayesian Network
                 net_path = os.path.join(self.data_directory, folder, filename)
 
-                net_path = (
-                    "/Users/nedim.azar/Desktop/VU/KR21-Project-2-PGM-/bayes/40.xml"
-                )
-                reasoner = BNReasoner(net_path)
+                # reasoner = BNReasoner(net_path)
 
-                self.experiment(
-                    reasoner, filename, results_file=f"results/results_{i}.csv"
-                )
+                self.experiment(net_path, results_file=f"results/results_{i}.csv")
 
     def get_query_and_evidence(self, bn: BayesNet):
-        variable_names = bn.get_all_variables()
-        n_var = len(variable_names)
+        Q = []
+        E = {}
+        while Q == [] or E == {}:
+            variable_names = bn.get_all_variables()
+            n_var = len(variable_names)
 
-        Q_n = n_var // QUERY_RATIO
-        E_n = Q_n // 3
+            Q_n = n_var // 3
+            E_n = Q_n // 2
 
-        Q = random.sample(variable_names, Q_n)
+            Q = random.sample(variable_names, Q_n)
 
-        E_vars = Q[:E_n]
+            E_vars = Q[:E_n]
 
-        E = {v: random.choice([True, False]) for v in E_vars}
+            E = {v: random.choice([True, False]) for v in E_vars}
 
         return Q, Q[E_n:], E
 
-    def experiment(self, reasoner: BNReasoner, filename, results_file):
-        # Get the number of variables in the network
-        n_var = len(reasoner.bn.get_all_variables())
-        # The size of the MAP and MPE queries will be a ratio of the number of variables
-        query_size = round(n_var / 3)
+    def query_evidence(self, bn):
+        variables = deepcopy(bn.get_all_variables())
 
-        Q, Q_E, E = self.get_query_and_evidence(reasoner.bn)
-        print(len(Q), len(Q_E), len(E))
+        n = len(variables) // 5
 
-        for heuristic in ["fill", "degree", "rand"]:
-            pi = reasoner.ordering(heuristic=heuristic)
+        Q = []
+        E = {}
 
-            # print(reasoner.marginal_distribution(Q_E, E, pi=pi))
+        for x in range(n):
+            Q.append(variables.pop(random.randint(0, n - 1)))
+            E[variables.pop(random.randint(0, n - 1))] = random.choice([True, False])
+        return Q, E
 
-            print(reasoner.marginal_distribution(Q=Q, E={}, pi=pi))
+    def experiment(self, filename, results_file):
+        n_var = None
+        for x in range(100):
+            print(f"RUN #{x}")
 
-            # TODO Time minFillMPE
-            fill_mpe_start = time()
-            fill_mpe = time() - fill_mpe_start
+            reasoner = BNReasoner(filename)
+            n_var = len(reasoner.bn.get_all_variables())
 
-            # TODO Time minDegMPE
-            deg_mpe_start = time()
-            deg_mpe = time() - deg_mpe_start
+            Q_E, E = self.query_evidence(reasoner.bn)
+            reasoner.network_pruning(Q=Q_E, E=E)
 
-            # TODO Time minFillMAP
-            fill_map_start = time()
-            fill_map = time() - fill_map_start
+            pi_deg = reasoner.ordering(heuristic="degree")
+            pi_fill = reasoner.ordering(heuristic="fill")
+            pi_rand = reasoner.ordering(heuristic="rand")
 
-            # TODO Time minDegMAP
-            deg_map_start = time()
-            deg_map = time() - deg_map_start
+            try:
+                # Time minDegMAP
+                deg_map_start = time()
+                reasoner.MAP(Q=Q_E, E=E, pi=pi_deg)
+                deg_map = time() - deg_map_start
+                print("MAP with DEGREE heuristic:", deg_map)
+            except Exception:
+                print("MAP with DEGREE failed :(")
+                deg_map = None
+                print(Q_E, E, sep="\n")
 
-            # TODO Time randMPE
-            rand_mpe_start = time()
-            rand_mpe = time() - rand_mpe_start
+            try:
+                # Time minFillMAP
+                fill_map_start = time()
+                reasoner.MAP(Q=Q_E, E=E, pi=pi_fill)
+                fill_map = time() - fill_map_start
+                print("MAP with FILL heuristic:", fill_map)
+            except Exception:
+                print("MAP wih FILL failed :(")
+                fill_map = None
 
-            # TODO Time randMPE
-            rand_map_start = time()
-            rand_map = time() - rand_map_start
+            try:
+                # Time randMAP
+                rand_map_start = time()
+                reasoner.MAP(Q=Q_E, E=E, pi=pi_rand)
+                rand_map = time() - rand_map_start
+                print("MAP with RAND heuristic:", rand_map)
+            except Exception:
+                print("MAP wih RAND failed :(")
+                rand_map = None
+
+            try:
+                # Time minDegMPE
+                deg_mpe_start = time()
+                reasoner.MPE(E=E, pi=pi_deg)
+                deg_mpe = time() - deg_mpe_start
+                print("MPE with DEGREE heuristic:", deg_mpe)
+            except:
+                print("MPE with DEGREE failed :(")
+                deg_mpe = None
+
+            try:
+                # Time minFillMPE
+                fill_mpe_start = time()
+                reasoner.MPE(E=E, pi=pi_fill)
+                fill_mpe = time() - fill_mpe_start
+                print("MPE with FILL heuristic:", fill_mpe)
+            except Exception:
+                print("MPE with FILL failed :(")
+                fill_mpe = None
+
+            try:
+                # Time randMPE
+                rand_mpe_start = time()
+                reasoner.MPE(E=E, pi=pi_rand)
+                rand_mpe = time() - rand_mpe_start
+                print("MPE with RAND heuristic:", rand_mpe)
+            except:
+                print("MPE with RAND failed :(")
+                rand_mpe = None
 
             with open(results_file, "a") as datafile:
                 datafile.write(
-                    f"{n_var},{fill_mpe},{deg_mpe},{fill_map},{deg_map},{rand_mpe},{rand_map}\n"
+                    f"{n_var},{deg_map},{fill_map},{rand_map},{deg_mpe},{fill_mpe},{rand_mpe}\n"
                 )
 
 
