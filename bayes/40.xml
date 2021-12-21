@@ -16,281 +16,281 @@
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node0</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (15, 150)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node1</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (15, 390)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node2</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (135, 164)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node3</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (44, 270)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node4</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (135, 404)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node5</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (255, 150)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node6</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (44, 510)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node7</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (164, 284)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node8</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (284, 270)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node9</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (404, 255)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node10</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (375, 135)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node11</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (524, 269)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node12</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (495, 149)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node13</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (255, 390)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node14</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (164, 524)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node15</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (375, 375)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node16</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (644, 284)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node17</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (615, 164)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node18</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (284, 510)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node19</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (735, 150)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node20</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (764, 270)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node21</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (15, 630)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node22</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (495, 389)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node23</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (855, 135)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node24</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (615, 404)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node25</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (135, 644)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node26</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (884, 255)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node27</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (975, 149)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node28</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (1004, 269)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node29</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (45, 30)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node30</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (1124, 284)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node31</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (735, 390)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node32</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (165, 44)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node33</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (404, 495)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node34</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (524, 509)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node35</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (644, 524)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node36</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (255, 630)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node37</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (855, 375)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node38</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (285, 30)</PROPERTY>
 </VARIABLE>
 <!-- Variables -->
 <VARIABLE TYPE="nature">
     <NAME>node39</NAME>
-    <OUTCOME>state0</OUTCOME>
-    <OUTCOME>state1</OUTCOME>
+    <OUTCOME>true</OUTCOME>
+    <OUTCOME>false</OUTCOME>
     <PROPERTY>position = (975, 389)</PROPERTY>
 </VARIABLE>
 <!-- Probability Distributions -->

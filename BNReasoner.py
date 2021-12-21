@@ -75,6 +75,9 @@ class BNReasoner:
         S = []
         cpts = {}
 
+        self.__node_prune(Q, E)
+        self.__edge_prune(E)
+
         for var in self.bn.get_all_variables():
             cpts[var] = self.bn.get_cpt(var)
             if len(E) != 0:
@@ -102,8 +105,6 @@ class BNReasoner:
 
         posterior_marginal_distribution = self.normalize(query_joint_prob)
 
-        print("---------------------------------------------------------------------------------------------")
-        print("POSTERIOR MARGINAL DISTRIBUTUION: \n",posterior_marginal_distribution)
         return posterior_marginal_distribution
 
 
@@ -165,44 +166,51 @@ class BNReasoner:
 
                 
     def joint_distribution(self, Q: List[str], S: List[pd.DataFrame], pi: List[str]):
-            
-        [print(S[i]) for i in range (0,len(S))]
-        for i in range(0, len(pi)):
-            
-            pi_i = pi[i]
-            print("\nPI({}) = : {}".format(i,pi_i))
 
-            #get factors mentioning pi(i)
-            factors_including_var = self.__get_factors_including_var(S,pi_i)
-            
+        # [print(S[i]) for i in range (0,len(S))]
+        for i in range(0, len(pi)):
+
+            pi_i = pi[i]
+            # print("\nPI({}) = : {}".format(i, pi_i))
+
+            # get factors mentioning pi(i)
+            factors_including_var = self.__get_factors_including_var(S, pi_i)
+
             # multiply all factors mentioning variable pi(i)
-            f = self.multiply_factors(factors_including_var,pi_i)
-            
-            #sum out
-            if pi_i not in Q: 
-                f_i = self.sum_out_var(f,pi_i)
+            print(factors_including_var)
+            f = self.multiply_factors(factors_including_var, pi_i)
+
+            # sum out
+            if pi_i not in Q:
+                f_i = self.sum_out_var(f, pi_i)
             else:
                 f_i = f
 
-            #remove elements factors_including_var from S 
+            # remove elements factors_including_var from S
             for factor in factors_including_var:
-                arr = [factor.sort_index().sort_index(axis=1).equals(s_factor.sort_index().sort_index(axis=1))  for s_factor in S]
-                for i in range(0,len(arr)):
-                    if arr[i] == True: S.pop(i) 
-                
-            #then add new factor f_i to S
+                arr = [
+                    factor.sort_index()
+                    .sort_index(axis=1)
+                    .equals(s_factor.sort_index().sort_index(axis=1))
+                    for s_factor in S
+                ]
+                for i in range(0, len(arr)):
+                    if arr[i] == True:
+                        S.pop(i)
+
+            # then add new factor f_i to S
             S.append(f_i)
-                
-            print("\n-result S: \n")
-            [print(S[i]) for i in range(0,len(S))]                
-            print("_____________________________________________")
-        
-        S = self.multiply_factors(S,'')
-        
+
+            # print("\n-result S: \n")
+            # [print(S[i]) for i in range(0, len(S))]
+            # print("_____________________________________________")
+        print("S:", S)
+        S = self.multiply_factors(S, "")
+
         return S
 
     def multiply_factors(self, factors: List[pd.DataFrame], var: str) -> pd.DataFrame:
-        
+        print((factors))
         if len(factors) == 1:
             return factors[0]
         else:
@@ -215,7 +223,7 @@ class BNReasoner:
                     var.remove("p")
                     print(var)
                 else:
-                    var = [var]
+                    var = [var] if isinstance(var, str) else var[0]
 
                 mult = f1.merge(f2, on=var)
                 mult["p"] = mult.p_x * mult.p_y
@@ -223,7 +231,7 @@ class BNReasoner:
 
                 factors = factors[2:]
                 factors.append(mult)
-
+        print(factors)
         return factors[0]
 
     def sum_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
@@ -271,12 +279,12 @@ class BNReasoner:
         
 
     def normalize(self, joint_probability: pd.DataFrame):
-        
-        normalize_factor = joint_probability['p'].sum()
+
+        normalize_factor = joint_probability["p"].sum()
         joint_probability.p = joint_probability.p / normalize_factor
 
         return joint_probability
-        
+
     def __get_factors_including_var(self, factors: List[pd.DataFrame], k: str):
         """
          Get the subset of factors mentioning variable k
@@ -404,7 +412,6 @@ class BNReasoner:
             # delete variable min_degree_node
             interaction.remove_node(min_degree_node)
 
-        print("Min Degree order PI= ", pi)
         return pi
 
     # Get the MINIMAL FILL order of variable eliminiation
@@ -448,7 +455,7 @@ class BNReasoner:
             interaction.remove_node(min_fill_node)
             pi.append(min_fill_node)
 
-        print("Min FILL order PI = ", pi)
+        # print("Min FILL order PI = ", pi)
         return pi
 
 
