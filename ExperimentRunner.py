@@ -3,6 +3,7 @@ from BayesNet import BayesNet
 import random
 import os
 from time import time
+from copy import deepcopy
 
 
 class ExperimentRunner:
@@ -26,37 +27,50 @@ class ExperimentRunner:
                 # Create a BNReasoner with that Bayesian Network
                 net_path = os.path.join(self.data_directory, folder, filename)
 
-                reasoner = BNReasoner(net_path)
+                # reasoner = BNReasoner(net_path)
 
-                self.experiment(
-                    reasoner, filename, results_file=f"results/results_{i}.csv"
-                )
+                self.experiment(net_path, results_file=f"results/results_{i}.csv")
 
     def get_query_and_evidence(self, bn: BayesNet):
-        variable_names = bn.get_all_variables()
-        n_var = len(variable_names)
+        Q = []
+        E = {}
+        while Q == [] or E == {}:
+            variable_names = bn.get_all_variables()
+            n_var = len(variable_names)
 
-        Q_n = n_var // 2
-        E_n = Q_n // 2
+            Q_n = n_var // 3
+            E_n = Q_n // 2
 
-        Q = random.sample(variable_names, Q_n)
+            Q = random.sample(variable_names, Q_n)
 
-        E_vars = Q[:E_n]
+            E_vars = Q[:E_n]
 
-        E = {v: random.choice([True, False]) for v in E_vars}
+            E = {v: random.choice([True, False]) for v in E_vars}
 
         return Q, Q[E_n:], E
 
-    def experiment(self, reasoner: BNReasoner, filename, results_file):
-        # Get the number of variables in the network
-        n_var = len(reasoner.bn.get_all_variables())
-        # The size of the MAP and MPE queries will be a ratio of the number of variables
-        query_size = round(n_var / 3)
+    def query_evidence(self, bn):
+        variables = deepcopy(bn.get_all_variables())
 
-        for x in range(1000):
+        n = len(variables) // 5
+
+        Q = []
+        E = {}
+
+        for x in range(n):
+            Q.append(variables.pop(random.randint(0, n - 1)))
+            E[variables.pop(random.randint(0, n - 1))] = random.choice([True, False])
+        return Q, E
+
+    def experiment(self, filename, results_file):
+        n_var = None
+        for x in range(100):
             print(f"RUN #{x}")
-            Q, Q_E, E = self.get_query_and_evidence(reasoner.bn)
 
+            reasoner = BNReasoner(filename)
+            n_var = len(reasoner.bn.get_all_variables())
+
+            Q_E, E = self.query_evidence(reasoner.bn)
             reasoner.network_pruning(Q=Q_E, E=E)
 
             pi_deg = reasoner.ordering(heuristic="degree")
@@ -72,6 +86,7 @@ class ExperimentRunner:
             except Exception:
                 print("MAP with DEGREE failed :(")
                 deg_map = None
+                print(Q_E, E, sep="\n")
 
             try:
                 # Time minFillMAP
