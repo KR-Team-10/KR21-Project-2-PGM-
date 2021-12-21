@@ -98,7 +98,8 @@ class BNReasoner:
     # Marginal Distributions (12pts)
     # TODO ve_pr2 algorithm
     def marginal_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
-
+        # print("Q= ",Q)
+        # print("E= ", E)
         self.network_pruning(Q, E)
         S = self.__get_compatible_cpts(E)
 
@@ -165,7 +166,6 @@ class BNReasoner:
         for i in range(0, len(pi)):
 
             pi_i = pi[i]
-            print("\nPI({}) = : {}".format(i,pi_i))
 
             # get factors mentioning pi(i)
             factors_including_var = self.__get_factors_including_var(S, pi_i)
@@ -302,7 +302,6 @@ class BNReasoner:
         else:
             factor = factor.loc[factor['p'] == factor['p'].max()]
 
-        print("**************************************************************")
         return factor
 
     def max_out_row(self, factor: pd.DataFrame) -> pd.DataFrame:
@@ -527,6 +526,70 @@ def main_martin():
     print("\n\nMPE: \n",reasoner.MPE({"ADHD": False}, pi_mpe))
     # print("\n\nMAP: \n",reasoner.MAP(["Autism","OCD"],{"ADHD": True}, pi_map))
 
+def main_use_case_questions():
+    net_path = "testing/psyc_disorders.BIFXML"
+
+    #Pr(Sex=F, Genetic=F, Depression=T, Anxiety=T, ADHD=T,Autism=F, OCD=F, SubstanceAbuse=F, EatingDisorder=F,Insomnia=F) = ?
+    reasoner1 = BNReasoner(net=net_path)
+    
+    pi = reasoner1.ordering()
+    q1 =reasoner1.marginal_distribution(["Sex","Genetic","Depression","Anxiety","ADHD","Autism","OCD","SA","ED","Insomnia"], {}, pi)
+    
+    q1 = q1.loc[ (q1['Sex']== False) 
+        & (q1['Genetic'] == False) 
+        & (q1['Genetic']== False) 
+        & (q1['Depression']== True) 
+        & (q1['Anxiety']== True) 
+        & (q1['ADHD']== True )
+        & (q1['Autism']== False)
+        & (q1['OCD']== False )
+        & (q1['SA']== False )
+        & (q1['ED']== False )
+        & (q1['Insomnia']== False)
+    
+    ]
+    print("________________________________________________________________________________________________________________________________________________________________________")
+    print("Q1: Pr(Sex=F, Genetic=F, Depression=T, Anxiety=T, ADHD=T,Autism=F, OCD=F, SubstanceAbuse=F, EatingDisorder=F,Insomnia=F) = {}\n".format(q1.iloc[0]['p']))
+    print(q1)
+    print("________________________________________________________________________________________________________________________________________________________________________")
+    
+    #  Pr(EatingDisorder=T, Insomnia=F |Depression=T) = ??
+    reasoner2 = BNReasoner(net=net_path)
+    q2 =reasoner1.marginal_distribution(["ED","Insomnia"], {'Depression':True}, pi)    
+    print(q2)
+    q2 = q2.loc[ (q2['ED']== True) & (q2['Insomnia'] == False)]  
+    
+    print("________________________________________________________________________________________________________________________________________________________________________")
+    print("Q2: Pr(EatingDisorder=T, Insomnia=F |Depression=T) = {}\n".format(q2.iloc[0]['p']))
+    print(q2)
+    print("________________________________________________________________________________________________________________________________________________________________________")
+    
+    
+    #Pr(Sex=T, OCD=T |ADHD=F, Autism=F) = ??
+    reasoner3 = BNReasoner(net=net_path)
+    q3 =reasoner3.marginal_distribution(["Sex","OCD"], {'ADHD':False,'Autism':False}, pi)    
+    print(q3)
+    q3 = q3.loc[ (q3['Sex']== True) & (q3['OCD'] == True)]  
+    
+    print("________________________________________________________________________________________________________________________________________________________________________")
+    print("Q3: #Pr(Sex=T, OCD=T |ADHD=F, Autism=F) = {}\n".format(q3.iloc[0]['p']))
+    print(q3)
+    print("________________________________________________________________________________________________________________________________________________________________________")    
+
+    #MAP Q= {SubstanceAbuse}, given  Genetics=T, Anxiety=T, Insomnia=F
+    reasoner4 = BNReasoner(net=net_path)
+    q4 =reasoner4.MAP(["SA"], {'Genetics':True,'Anxiety':True}, pi)    
+    print(q4)
+    print("________________________________________________________________________________________________________________________________________________________________________")        
+    
+    #What is the MAP of someone having substance abuse, given that person has the family history, anxiety, but no insomnia?
+    reasoner5 = BNReasoner(net=net_path)
+    q5 =reasoner5.MPE({'Genetics':True,'Anxiety':True,'Insomnia':False}, pi)    
+    print(q5)
+    print("________________________________________________________________________________________________________________________________________________________________________")            
+
+    # print("\n\nMPE: \n",reasoner.MPE({"ADHD": False}, pi_mpe))
+
 
 def main_debuging():
     net_path = "bayes/15.xml"
@@ -541,4 +604,6 @@ def main_debuging():
 
 
 if __name__ == "__main__":
-    main_debuging()
+    main_use_case_questions()
+
+
