@@ -548,7 +548,7 @@ def main_martin():
 
 
 def main_debuging():
-    net_path = "bayes/40.xml"
+    net_path = "bayes/30.xml"
     reasoner = BNReasoner(net=net_path)
 
     Q, Q_E, E = get_query_and_evidence(reasoner.bn)
@@ -557,12 +557,12 @@ def main_debuging():
 
     print(
         "\n\nMARGINAL DISTRIBUTION: \n",
-        reasoner.marginal_distribution(Q=Q_E, E=E, pi=pi),
+        reasoner.marginal_distribution(Q=Q, E={}, pi=pi),
     )
 
     # print("\n\nMARGINAL DISTRIBUTION: \n",reasoner.marginal_distribution(["Autism", "OCD"], {"ADHD": False}, pi))
 
-    print("\n\nMPE: \n", reasoner.MPE({"ADHD": False}, pi))
+    # print("\n\nMPE: \n", reasoner.MPE({"ADHD": False}, pi))
 
 
 if __name__ == "__main__":
