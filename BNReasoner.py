@@ -112,10 +112,11 @@ class BNReasoner:
     # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
     # evidence E, compute the most likely instantiations of Q (12pts).
     def MAP(self,Q: List[str],E: Dict[str, bool], pi: List[str]):
+        
+        #put the query variables in the end of pi
         pi_aux = deepcopy(pi)
         for o in pi_aux:
             if o in Q:
-                o_aux = o
                 pi.remove(o)
                 pi.append(o)
     
@@ -129,7 +130,6 @@ class BNReasoner:
         for i in range(0, len(pi)):
             
             pi_i = pi[i]
-            # print("\nPI({}) = : {}".format(i,pi_i))
 
             #get factors mentioning pi(i)
             factors_including_var = self.__get_factors_including_var(S,pi_i)
@@ -153,9 +153,8 @@ class BNReasoner:
                 S.append(f_i)
                     
         S = self.multiply_factors(S,'')        
-        # print("_____________________________________________")
-        # [print(S[i]) for i in range(0,len(S))]                
-        # print("_____________________________________________")
+        S = self.max_out_row(S)
+
         return S
         
     def MPE(self,E: Dict[str, bool], pi: List[str] ):
@@ -170,7 +169,7 @@ class BNReasoner:
         for i in range(0, len(pi)):
             
             pi_i = pi[i]
-            # print("\nPI({}) = : {}".format(i,pi_i))
+            print("\nPI({}) = : {}".format(i,pi_i))
 
             #get factors mentioning pi(i)
             factors_including_var = self.__get_factors_including_var(S,pi_i)
@@ -191,9 +190,7 @@ class BNReasoner:
                 S.append(f_i)
                     
         S = self.multiply_factors(S,'')        
-        # print("_____________________________________________")
-        # [print(S[i]) for i in range(0,len(S))]                
-        # print("_____________________________________________")
+        S = self.max_out_row(S)
         return S
                 
     def joint_distribution(self, Q: List[str], S: List[pd.DataFrame], pi: List[str]):
@@ -241,13 +238,8 @@ class BNReasoner:
         return S
 
     def multiply_factors(self, factors: List[pd.DataFrame], var: str) -> pd.DataFrame:
-        # print("**************************************************************")
-        # print("MULTIPLY")
-        # print("factors: ")
-        # [print(factors[i]) for i in range(0,len(factors))]
 
         if len(factors) == 1:
-            # print("**************************************************************")
             return factors[0]
         else:
             while len(factors) > 1:
@@ -260,7 +252,6 @@ class BNReasoner:
                     mult = f1.merge(f2, how='cross')
                     
                 else:
-                    # var = [var] if isinstance(var, str) else var[0]
                     var = list(set(f1.columns) & set(f2.columns)) #get the common columns to do the merge
                     var.remove('p')
                 
@@ -272,10 +263,6 @@ class BNReasoner:
                 factors = factors[2:]
                 factors.append(mult)
         
-        # print("\nResult of multiplication: ")
-        # [print(factors[i]) for i in range(0,len(factors))]
-        # print("**************************************************************")
-
         return factors[0]
 
     def sum_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
@@ -293,37 +280,36 @@ class BNReasoner:
         return factor
 
     def max_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
-        # print("**************************************************************")
-        # print("MAX OUT")
-        # print("factor: \n",factor)
         variables = list(factor.columns)
         variables.remove("p")
         variables.remove(var)
-        # print("group by variables: \n",variables)
 
         if(len(variables)>0):
-            
-            agg_dict =  {
-                        'p':lambda x : max(x),    # Sum duration per group
-                    }
 
-            factor = factor.groupby(
-                variables
-                ,as_index=False
-                ).agg(
-                    agg_dict
-                )     
+            df = factor
+            df.reset_index(drop=True, inplace=True)
+            df1 = df.groupby(variables, as_index=False)['p'].agg(['max', 'idxmax'])
+
+            df1['idxmax'] = df.loc[df1['idxmax'], var].values
+
+            df1 = df1.rename(columns={'idxmax':var,'max':'p'}).reset_index()
+
+            factor = df1
             
-            # print("result factor: \n",factor)
-            # print("**************************************************************")
             return factor
         else:
             factor = factor.loc[factor['p'] == factor['p'].max()]
-            # print("result factor: \n",factor)
 
-        # print("**************************************************************")
+        print("**************************************************************")
         return factor
 
+    def max_out_row(self, factor: pd.DataFrame) -> pd.DataFrame:
+        
+        factor = factor.loc[factor['p'] == factor['p'].max()]
+
+        return factor        
+
+    
     def normalize(self, joint_probability: pd.DataFrame):
 
         normalize_factor = joint_probability["p"].sum()
@@ -516,15 +502,23 @@ def main():
 
 def main_martin():
     # net_path = "testing/abc_example.BIFXML"
-    net_path = "testing/map_mpe_example.BIFXML"
+    # net_path = "testing/map_mpe_example.BIFXML"
+    net_path = "testing/psyc_disorders.BIFXML"
+
     reasoner = BNReasoner(net=net_path)
     
     pi_mpe = ["J","I","X","Y","O"]
-    pi_map = ["O","Y","X","I","J"]
+    # pi_map = ["O","Y","X","I","J"]
     
-    # print(reasoner.MPE({"J":True,"O":False},pi_mpe))
-    print("\n\nMAP: \n",reasoner.MAP(["I","J"],{"O":True},pi_map))
+    pi_mpe = reasoner.ordering()
+    
+    # print("\n\nMPE: \n",reasoner.MPE({"J":True,"O":False},pi_mpe))
+    # print("\n\nMAP: \n",reasoner.MAP(["I","J"],{"O":True},pi_map))
     # reasoner.marginal_distribution(["C"], {"A": True}, pi)
+
+    print("\n\nMPE: \n",reasoner.MPE({"ADHD": False}, pi_mpe))
+    # print("\n\nMAP: \n",reasoner.MAP(["Autism","OCD"],{"ADHD": True}, pi_map))
+
 
 def main_debuging():
     net_path = "testing/psyc_disorders.BIFXML"
