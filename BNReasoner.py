@@ -99,6 +99,7 @@ class BNReasoner:
         print("E= ", E)
         print("pi = ", pi)
 
+        self.network_pruning(Q,E)
         S = self.__get_compatible_cpts(E)
 
         query_joint_prob = self.joint_distribution(Q,S,pi)
@@ -113,7 +114,6 @@ class BNReasoner:
     def MAP(self,E: Dict[str, bool], pi: List[str]):
         print("oli")
         
-
     # TODO liberate the settlements
     def MPE(self,E: Dict[str, bool], pi: List[str] ):
         Q = self.bn.get_all_variables()
@@ -151,23 +151,13 @@ class BNReasoner:
             [print(S[i]) for i in range(0,len(S))]                
             print("_____________________________________________")
 
-            # for s in S:
-            #     print(s)            
-            #     if(len(s.index) == 1):
-            #         print("LENGHT 1")
-            #         # print(s.index)
-            #         print(s.iloc[0])
-            #         print(s.iloc[0][0])
-            #         # mpe_instantations[] = s.iloc[0][0]
-            # print("_____________________________________________")
-
         print(mpe_instantations)
         # S = self.multiply_factors(S,'')        
 
                 
     def joint_distribution(self, Q: List[str], S: List[pd.DataFrame], pi: List[str]):
 
-        # [print(S[i]) for i in range (0,len(S))]
+        [print(S[i]) for i in range (0,len(S))]
         for i in range(0, len(pi)):
 
             pi_i = pi[i]
@@ -177,33 +167,34 @@ class BNReasoner:
             factors_including_var = self.__get_factors_including_var(S, pi_i)
 
             # multiply all factors mentioning variable pi(i)
-            f = self.multiply_factors(factors_including_var, pi_i)
+            if(factors_including_var):
+                f = self.multiply_factors(factors_including_var, pi_i)
 
-            # sum out
-            if pi_i not in Q:
-                f_i = self.sum_out_var(f, pi_i)
-            else:
-                f_i = f
+                # sum out
+                if pi_i not in Q:
+                    f_i = self.sum_out_var(f, pi_i)
+                else:
+                    f_i = f
 
-            # remove elements factors_including_var from S
-            for factor in factors_including_var:
-                arr = [
-                    factor.sort_index()
-                    .sort_index(axis=1)
-                    .equals(s_factor.sort_index().sort_index(axis=1))
-                    for s_factor in S
-                ]
-                for i in range(0, len(arr)):
-                    if arr[i] == True:
-                        S.pop(i)
+                # remove elements factors_including_var from S
+                for factor in factors_including_var:
+                    arr = [
+                        factor.sort_index()
+                        .sort_index(axis=1)
+                        .equals(s_factor.sort_index().sort_index(axis=1))
+                        for s_factor in S
+                    ]
+                    for i in range(0, len(arr)):
+                        if arr[i] == True:
+                            S.pop(i)
 
-            # then add new factor f_i to S
-            S.append(f_i)
+                # then add new factor f_i to S
+                S.append(f_i)
 
             # print("\n-result S: \n")
             # [print(S[i]) for i in range(0, len(S))]
             # print("_____________________________________________")
-        print("S:", S)
+        
         S = self.multiply_factors(S, "")
 
         return S
@@ -238,7 +229,8 @@ class BNReasoner:
                 factors = factors[2:]
                 factors.append(mult)
         
-        print(factors)
+        # print("\nResult of multiplication: ")
+        # [print(factors[i]) for i in range(0,len(factors))]
         # print("**************************************************************")
 
         return factors[0]
