@@ -5,10 +5,11 @@ import os
 from time import time
 from copy import deepcopy
 
-N_RUNS = 100     # The number of random queries to run on each BN.
-N_QUERY = 3      # Change this to set the number of Query variables, a third by default.
-N_EVIDENCE = 2   # Change this to set the number of Evidence variables, half of the Query
-                 # variables by default.
+N_RUNS = 100  # The number of random queries to run on each BN.
+N_QUERY = 3  # Change this to set the number of Query variables, a third by default.
+N_EVIDENCE = 2  # Change this to set the number of Evidence variables, half of the Query
+# variables by default.
+
 
 class ExperimentRunner:
     def __init__(self, data_directory="", bn_folders=["large"]):

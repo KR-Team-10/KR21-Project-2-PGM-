@@ -97,10 +97,9 @@ class BNReasoner:
 
         return posterior_marginal_distribution
 
+    def MAP(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
 
-    def MAP(self,Q: List[str],E: Dict[str, bool], pi: List[str]):
-        
-        #put the query variables in the end of pi
+        # put the query variables in the end of pi
         pi_aux = deepcopy(pi)
         for o in pi_aux:
             if o in Q:
@@ -139,8 +138,8 @@ class BNReasoner:
 
                 # then add new factor f_i to S
                 S.append(f_i)
-                    
-        S = self.multiply_factors(S,'')        
+
+        S = self.multiply_factors(S, "")
         S = self.max_out_row(S)
 
         return S
@@ -177,8 +176,8 @@ class BNReasoner:
 
                 # then add new factor f_i to S
                 S.append(f_i)
-                    
-        S = self.multiply_factors(S,'')        
+
+        S = self.multiply_factors(S, "")
         S = self.max_out_row(S)
         return S
 
@@ -237,9 +236,11 @@ class BNReasoner:
                     mult = f1.merge(f2, how="cross")
 
                 else:
-                    var = list(set(f1.columns) & set(f2.columns)) #get the common columns to do the merge
-                    var.remove('p')
-                
+                    var = list(
+                        set(f1.columns) & set(f2.columns)
+                    )  # get the common columns to do the merge
+                    var.remove("p")
+
                     mult = f1.merge(f2, on=var)
 
                 mult["p"] = mult.p_x * mult.p_y
@@ -247,7 +248,7 @@ class BNReasoner:
 
                 factors = factors[2:]
                 factors.append(mult)
-        
+
         return factors[0]
 
     def sum_out_var(self, factor: pd.DataFrame, var: str) -> pd.DataFrame:
@@ -268,31 +269,30 @@ class BNReasoner:
         variables.remove("p")
         variables.remove(var)
 
-        if(len(variables)>0):
+        if len(variables) > 0:
 
             df = factor
             df.reset_index(drop=True, inplace=True)
-            df1 = df.groupby(variables, as_index=False)['p'].agg(['max', 'idxmax'])
+            df1 = df.groupby(variables, as_index=False)["p"].agg(["max", "idxmax"])
 
-            df1['idxmax'] = df.loc[df1['idxmax'], var].values
+            df1["idxmax"] = df.loc[df1["idxmax"], var].values
 
-            df1 = df1.rename(columns={'idxmax':var,'max':'p'}).reset_index()
+            df1 = df1.rename(columns={"idxmax": var, "max": "p"}).reset_index()
 
             factor = df1
-            
+
             return factor
         else:
-            factor = factor.loc[factor['p'] == factor['p'].max()]
+            factor = factor.loc[factor["p"] == factor["p"].max()]
 
         return factor
 
     def max_out_row(self, factor: pd.DataFrame) -> pd.DataFrame:
-        
-        factor = factor.loc[factor['p'] == factor['p'].max()]
 
-        return factor        
+        factor = factor.loc[factor["p"] == factor["p"].max()]
 
-    
+        return factor
+
     def normalize(self, joint_probability: pd.DataFrame):
 
         normalize_factor = joint_probability["p"].sum()
@@ -492,67 +492,105 @@ def main():
 def use_case_questions():
     net_path = "testing/psyc_disorders.BIFXML"
 
-    #Pr(Sex=F, Genetic=F, Depression=T, Anxiety=T, ADHD=T,Autism=F, OCD=F, SubstanceAbuse=F, EatingDisorder=F,Insomnia=F) = ?
+    # Pr(Sex=F, Genetic=F, Depression=T, Anxiety=T, ADHD=T,Autism=F, OCD=F, SubstanceAbuse=F, EatingDisorder=F,Insomnia=F) = ?
     reasoner1 = BNReasoner(net=net_path)
-    
+
     pi = reasoner1.ordering()
-    q1 =reasoner1.marginal_distribution(["Sex","Genetic","Depression","Anxiety","ADHD","Autism","OCD","SA","ED","Insomnia"], {}, pi)
-    
-    q1 = q1.loc[ (q1['Sex']== False) 
-        & (q1['Genetic'] == False) 
-        & (q1['Genetic']== False) 
-        & (q1['Depression']== True) 
-        & (q1['Anxiety']== True) 
-        & (q1['ADHD']== True )
-        & (q1['Autism']== False)
-        & (q1['OCD']== False )
-        & (q1['SA']== False )
-        & (q1['ED']== False )
-        & (q1['Insomnia']== False)
-    
+    q1 = reasoner1.marginal_distribution(
+        [
+            "Sex",
+            "Genetic",
+            "Depression",
+            "Anxiety",
+            "ADHD",
+            "Autism",
+            "OCD",
+            "SA",
+            "ED",
+            "Insomnia",
+        ],
+        {},
+        pi,
+    )
+
+    q1 = q1.loc[
+        (q1["Sex"] == False)
+        & (q1["Genetic"] == False)
+        & (q1["Genetic"] == False)
+        & (q1["Depression"] == True)
+        & (q1["Anxiety"] == True)
+        & (q1["ADHD"] == True)
+        & (q1["Autism"] == False)
+        & (q1["OCD"] == False)
+        & (q1["SA"] == False)
+        & (q1["ED"] == False)
+        & (q1["Insomnia"] == False)
     ]
-    print("________________________________________________________________________________________________________________________________________________________________________")
-    print("Q1: Pr(Sex=F, Genetic=F, Depression=T, Anxiety=T, ADHD=T,Autism=F, OCD=F, SubstanceAbuse=F, EatingDisorder=F,Insomnia=F) = {}\n".format(q1.iloc[0]['p']))
+    print(
+        "________________________________________________________________________________________________________________________________________________________________________"
+    )
+    print(
+        "Q1: Pr(Sex=F, Genetic=F, Depression=T, Anxiety=T, ADHD=T,Autism=F, OCD=F, SubstanceAbuse=F, EatingDisorder=F,Insomnia=F) = {}\n".format(
+            q1.iloc[0]["p"]
+        )
+    )
     print(q1)
-    print("________________________________________________________________________________________________________________________________________________________________________")
-    
+    print(
+        "________________________________________________________________________________________________________________________________________________________________________"
+    )
+
     #  Pr(EatingDisorder=T, Insomnia=F |Depression=T) = ??
     reasoner2 = BNReasoner(net=net_path)
-    q2 =reasoner1.marginal_distribution(["ED","Insomnia"], {'Depression':True}, pi)    
+    q2 = reasoner1.marginal_distribution(["ED", "Insomnia"], {"Depression": True}, pi)
     print(q2)
-    q2 = q2.loc[ (q2['ED']== True) & (q2['Insomnia'] == False)]  
-    
-    print("________________________________________________________________________________________________________________________________________________________________________")
-    print("Q2: Pr(EatingDisorder=T, Insomnia=F |Depression=T) = {}\n".format(q2.iloc[0]['p']))
-    print(q2)
-    print("________________________________________________________________________________________________________________________________________________________________________")
-    
-    
-    #Pr(Sex=T, OCD=T |ADHD=F, Autism=F) = ??
-    reasoner3 = BNReasoner(net=net_path)
-    q3 =reasoner3.marginal_distribution(["Sex","OCD"], {'ADHD':False,'Autism':False}, pi)    
-    print(q3)
-    q3 = q3.loc[ (q3['Sex']== True) & (q3['OCD'] == True)]  
-    
-    print("________________________________________________________________________________________________________________________________________________________________________")
-    print("Q3: #Pr(Sex=T, OCD=T |ADHD=F, Autism=F) = {}\n".format(q3.iloc[0]['p']))
-    print(q3)
-    print("________________________________________________________________________________________________________________________________________________________________________")    
+    q2 = q2.loc[(q2["ED"] == True) & (q2["Insomnia"] == False)]
 
-    #MAP Q= {SubstanceAbuse}, given  Genetics=T, Anxiety=T, Insomnia=F
+    print(
+        "________________________________________________________________________________________________________________________________________________________________________"
+    )
+    print(
+        "Q2: Pr(EatingDisorder=T, Insomnia=F |Depression=T) = {}\n".format(
+            q2.iloc[0]["p"]
+        )
+    )
+    print(q2)
+    print(
+        "________________________________________________________________________________________________________________________________________________________________________"
+    )
+
+    # Pr(Sex=T, OCD=T |ADHD=F, Autism=F) = ??
+    reasoner3 = BNReasoner(net=net_path)
+    q3 = reasoner3.marginal_distribution(
+        ["Sex", "OCD"], {"ADHD": False, "Autism": False}, pi
+    )
+    print(q3)
+    q3 = q3.loc[(q3["Sex"] == True) & (q3["OCD"] == True)]
+
+    print(
+        "________________________________________________________________________________________________________________________________________________________________________"
+    )
+    print("Q3: #Pr(Sex=T, OCD=T |ADHD=F, Autism=F) = {}\n".format(q3.iloc[0]["p"]))
+    print(q3)
+    print(
+        "________________________________________________________________________________________________________________________________________________________________________"
+    )
+
+    # MAP Q= {SubstanceAbuse}, given  Genetics=T, Anxiety=T, Insomnia=F
     reasoner4 = BNReasoner(net=net_path)
-    q4 =reasoner4.MAP(["SA"], {'Genetics':True,'Anxiety':True}, pi)    
+    q4 = reasoner4.MAP(["SA"], {"Genetics": True, "Anxiety": True}, pi)
     print(q4)
-    print("________________________________________________________________________________________________________________________________________________________________________")        
-    
-    #What is the MAP of someone having substance abuse, given that person has the family history, anxiety, but no insomnia?
+    print(
+        "________________________________________________________________________________________________________________________________________________________________________"
+    )
+
+    # What is the MAP of someone having substance abuse, given that person has the family history, anxiety, but no insomnia?
     reasoner5 = BNReasoner(net=net_path)
-    q5 =reasoner5.MPE({'Genetics':True,'Anxiety':True,'Insomnia':False}, pi)    
+    q5 = reasoner5.MPE({"Genetics": True, "Anxiety": True, "Insomnia": False}, pi)
     print(q5)
-    print("________________________________________________________________________________________________________________________________________________________________________")            
+    print(
+        "________________________________________________________________________________________________________________________________________________________________________"
+    )
 
 
 if __name__ == "__main__":
     use_case_questions()
-
-
