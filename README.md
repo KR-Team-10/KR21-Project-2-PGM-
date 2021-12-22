@@ -10,7 +10,7 @@
 
 # About running test cases
 + All the test cases for the Task 1  and Task 3 are contained in the file 'BNReasoner.py' along with the implementation of the functionalities.
-+ 
++ All answers for the questions regarding the use-case were runned in the use_case_questions() function of the 'BNReasoner.py" file.
 
 # About running the experiment
 + The experiment for Task 2 contained in the file 'ExperimentRunner.py' and can be done again by running the file

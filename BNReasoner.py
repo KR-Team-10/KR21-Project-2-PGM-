@@ -23,10 +23,6 @@ class BNReasoner:
             self.bn = net
         self.dsep_bn = deepcopy(self.bn)
 
-    # TODO: Remove TODO's as we go
-    # Hit it, hit it, get it, get it
-
-    # d-Separation (5pts)
     def d_separation(self, X: List[str], Z: List[str], Y: List[str]) -> bool:
         """
         Given disjoint sets of variables X, Y and Z, determines whether X is independent
@@ -62,7 +58,6 @@ class BNReasoner:
         elif heuristic == "rand":
             return self.__rand_order()
 
-    # Network Pruning (5pts)
     def network_pruning(self, Q: List[str], E: Dict[str, bool]):
         """
         Prunes the edges and nodes of the structure.
@@ -92,14 +87,7 @@ class BNReasoner:
 
         return S
 
-    # TODO Given query variables Q and a possibly empty evidence E, compute
-    # the marginal distribution P(Q|E) (12pts). (Note that Q is a subset of
-    # the variables in the Bayesian network X with Q⊂X but can also be Q=X.)
-    # Marginal Distributions (12pts)
-    # TODO ve_pr2 algorithm
     def marginal_distribution(self, Q: List[str], E: Dict[str, bool], pi: List[str]):
-        # print("Q= ",Q)
-        # print("E= ", E)
         self.network_pruning(Q, E)
         S = self.__get_compatible_cpts(E)
 
@@ -109,8 +97,7 @@ class BNReasoner:
 
         return posterior_marginal_distribution
 
-    # TODO MAP and MEP: Given a possibly empty set of query variables Q and an
-    # evidence E, compute the most likely instantiations of Q (12pts).
+
     def MAP(self,Q: List[str],E: Dict[str, bool], pi: List[str]):
         
         #put the query variables in the end of pi
@@ -200,7 +187,6 @@ class BNReasoner:
         for i in range(0, len(pi)):
 
             pi_i = pi[i]
-            # print("\nPI({}) = : {}".format(i, pi_i))
 
             # get factors mentioning pi(i)
             factors_including_var = self.__get_factors_including_var(S, pi_i)
@@ -229,10 +215,6 @@ class BNReasoner:
 
                 # then add new factor f_i to S
                 S.append(f_i)
-
-            # print("\n-result S: \n")
-            # [print(S[i]) for i in range(0, len(S))]
-            # print("_____________________________________________")
 
         S = self.multiply_factors(S, "")
 
@@ -507,26 +489,7 @@ def main():
     reasoner.bn.draw_structure()
 
 
-def main_martin():
-    # net_path = "testing/abc_example.BIFXML"
-    # net_path = "testing/map_mpe_example.BIFXML"
-    net_path = "testing/psyc_disorders.BIFXML"
-
-    reasoner = BNReasoner(net=net_path)
-    
-    pi_mpe = ["J","I","X","Y","O"]
-    # pi_map = ["O","Y","X","I","J"]
-    
-    pi_mpe = reasoner.ordering()
-    
-    # print("\n\nMPE: \n",reasoner.MPE({"J":True,"O":False},pi_mpe))
-    # print("\n\nMAP: \n",reasoner.MAP(["I","J"],{"O":True},pi_map))
-    # reasoner.marginal_distribution(["C"], {"A": True}, pi)
-
-    print("\n\nMPE: \n",reasoner.MPE({"ADHD": False}, pi_mpe))
-    # print("\n\nMAP: \n",reasoner.MAP(["Autism","OCD"],{"ADHD": True}, pi_map))
-
-def main_use_case_questions():
+def use_case_questions():
     net_path = "testing/psyc_disorders.BIFXML"
 
     #Pr(Sex=F, Genetic=F, Depression=T, Anxiety=T, ADHD=T,Autism=F, OCD=F, SubstanceAbuse=F, EatingDisorder=F,Insomnia=F) = ?
@@ -588,22 +551,8 @@ def main_use_case_questions():
     print(q5)
     print("________________________________________________________________________________________________________________________________________________________________________")            
 
-    # print("\n\nMPE: \n",reasoner.MPE({"ADHD": False}, pi_mpe))
-
-
-def main_debuging():
-    net_path = "bayes/15.xml"
-    reasoner = BNReasoner(net=net_path)
-
-    Q, Q_E, E = get_query_and_evidence(reasoner.bn)
-
-    pi = reasoner.ordering()
-
-    # print("\n\nMARGINAL DISTRIBUTION: \n",reasoner.marginal_distribution(["Autism", "OCD"], {"ADHD": False}, pi))
-    # print("\n\nMPE: \n",reasoner.MPE({"ADHD": False}, pi))
-
 
 if __name__ == "__main__":
-    main_use_case_questions()
+    use_case_questions()
 
 
