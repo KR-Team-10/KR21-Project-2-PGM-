@@ -2,19 +2,21 @@
 
 # Test files 
 
-+ All the networks used to test the implemented functionalitites are in the folder "/testing".
-+ + The network designed for our use-case is in the file 'psyc_disorders.BIFXML' 
++ All the networks used to test the implemented functionalitites are in the folder `/testing`.
++ + The network designed for our use-case is in the file `psyc_disorders.BIFXML'`
 
 + All the networks for the experiment for Task 2 are in the folder /bayes
 
 
 # About running test cases
-+ All the test cases for the Task 1  and Task 3 are contained in the file 'BNReasoner.py' along with the implementation of the functionalities.
-+ All answers for the questions regarding the use-case were runned in the use_case_questions() function of the 'BNReasoner.py" file.
++ All the test cases for the Task 1  and Task 3 are contained in the file `BNReasoner.py` along with the implementation of the functionalities.
++ All answers for the questions regarding the use-case were runned in the use_case_questions() function of the `BNReasoner.py` file.
 
 # About running the experiment
-+ The experiment for Task 2 contained in the file 'ExperimentRunner.py' and can be done again by running the file
-+ 
++ The experiment for Task 2 contained in the file `ExperimentRunner.py` and can be done again by running the file with the line `python3 ExperimentRunner.py`.
++ You will need to set the variables `N_RUNS`, `N_QUERY`, and `N_EVIDENCE` in the file.
++ Explanations of these variables can be found in comments next to their declaration.
++ You can add any `.BIFXML` file to the `/bayes` directory in order to run the experiments on your own custom Bayesian Networks, the script will automatically detect the file and run random queries on it the next time it is invoked.
 
 # Functionalities implemented
 + Next, a list of all functionalities implemented for Task 1

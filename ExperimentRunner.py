@@ -5,6 +5,10 @@ import os
 from time import time
 from copy import deepcopy
 
+N_RUNS = 100     # The number of random queries to run on each BN.
+N_QUERY = 3      # Change this to set the number of Query variables, a third by default.
+N_EVIDENCE = 2   # Change this to set the number of Evidence variables, half of the Query
+                 # variables by default.
 
 class ExperimentRunner:
     def __init__(self, data_directory="", bn_folders=["large"]):
@@ -38,8 +42,8 @@ class ExperimentRunner:
             variable_names = bn.get_all_variables()
             n_var = len(variable_names)
 
-            Q_n = n_var // 3
-            E_n = Q_n // 2
+            Q_n = n_var // N_QUERY
+            E_n = Q_n // N_EVIDENCE
 
             Q = random.sample(variable_names, Q_n)
 
@@ -64,7 +68,7 @@ class ExperimentRunner:
 
     def experiment(self, filename, results_file):
         n_var = None
-        for x in range(100):
+        for x in range(N_RUNS):
             print(f"RUN #{x}")
 
             reasoner = BNReasoner(filename)
